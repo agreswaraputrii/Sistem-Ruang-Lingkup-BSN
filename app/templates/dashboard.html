@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="mb-4">
+
+    <h3 class="mb-1">
+
+        Dashboard
+
+    </h3>
+
+
+    <p class="text-muted mb-0">
+
+        Ringkasan data lembaga sertifikasi.
+
+    </p>
+
+</div>
+
+
+
+<!-- ======================================================== -->
+<!-- SUMMARY -->
+<!-- ======================================================== -->
+
+<div class="row g-3 mb-4">
+
+
+    <!-- TOTAL -->
+
+    <div class="col-md-3">
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Total Lembaga
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ total_institution }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ACTIVE -->
+
+    <div class="col-md-3">
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Active
+
+            </div>
+
+
+            <div class="summary-value text-success">
+
+                {{ active_count }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- WITHDRAWN -->
+
+    <div class="col-md-3">
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Withdrawn
+
+            </div>
+
+
+            <div class="summary-value text-secondary">
+
+                {{ withdrawn_count }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- LAST SYNC -->
+
+    <div class="col-md-3">
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Terakhir Sinkron
+
+            </div>
+
+
+            <div class="sync-value">
+
+                {% if last_sync %}
+
+                    {{ last_sync.finished_at or last_sync.started_at }}
+
+                {% else %}
+
+                    Belum pernah sinkron
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ======================================================== -->
+<!-- SYNC INFORMATION -->
+<!-- ======================================================== -->
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+
+        <h5>
+
+            Sumber Data Master Lembaga
+
+        </h5>
+
+
+        <p class="text-muted mb-3">
+
+            Master Lembaga nantinya akan
+            disinkronkan langsung dari Google Sheets.
+
+        </p>
+
+
+        <div class="alert alert-info mb-0">
+
+            Koneksi Google Sheets belum diaktifkan.
+
+            <br>
+
+            Saat ini sistem masih menggunakan
+            database lokal SQLite.
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+{% endblock %}
