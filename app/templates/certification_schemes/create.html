@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                Tambah Skema Sertifikasi
+            </h3>
+
+            <p class="text-muted mb-0">
+                Tambahkan data baru ke Master Skema Sertifikasi.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/certification-schemes"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+    </div>
+
+
+    {% if status == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>Gagal.</strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Form Skema Sertifikasi
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form
+                method="post"
+                action="/certification-schemes/create"
+            >
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Skema Sertifikasi
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ next_code }}"
+                            readonly
+                        >
+
+                        <div class="form-text">
+                            ID dibuat otomatis oleh sistem berdasarkan ID terbesar yang sudah ada.
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-8">
+
+                        <label class="form-label fw-semibold">
+                            Nama Skema Sertifikasi
+                        </label>
+
+                        <input
+                            type="text"
+                            name="certification_scheme_name"
+                            class="form-control"
+                            placeholder="Masukkan nama Skema Sertifikasi"
+                            required
+                            autofocus
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert alert-info mt-4 mb-0">
+
+                    <strong>Informasi:</strong>
+
+                    ID Skema Sertifikasi tidak perlu diisi manual.
+
+                    Sistem akan membuat ID berikutnya secara otomatis.
+
+                    Contoh:
+                    <strong>0637 → 0638 → 0639</strong>.
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Simpan Data
+                    </button>
+
+
+                    <a
+                        href="/certification-schemes"
+                        class="btn btn-outline-secondary"
+                    >
+                        Batal
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

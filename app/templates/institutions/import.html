@@ -1,0 +1,923 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="container-fluid py-4">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div
+        class="d-flex flex-wrap
+               justify-content-between
+               align-items-start
+               gap-3 mb-4"
+    >
+
+
+        <div>
+
+            <h3 class="mb-1">
+                Import Master Lembaga
+            </h3>
+
+
+            <p class="text-muted mb-0">
+
+                Import data lembaga menggunakan
+                file Excel atau CSV.
+
+            </p>
+
+        </div>
+
+
+        <a
+            href="/institutions"
+            class="btn btn-outline-secondary"
+        >
+            Kembali ke Master Lembaga
+        </a>
+
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SUCCESS -->
+    <!-- ===================================================== -->
+
+    {% if success_message %}
+
+    <div
+        class="alert alert-success
+               alert-dismissible fade show"
+        role="alert"
+    >
+
+        <strong>
+            Berhasil.
+        </strong>
+
+        {{ success_message }}
+
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        >
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- ERROR -->
+    <!-- ===================================================== -->
+
+    {% if error_message %}
+
+    <div
+        class="alert alert-danger
+               alert-dismissible fade show"
+        role="alert"
+    >
+
+        <strong>
+            Import gagal.
+        </strong>
+
+        {{ error_message }}
+
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        >
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- RESULT -->
+    <!-- ===================================================== -->
+
+    {% if import_result %}
+
+    <div class="card shadow-sm mb-4">
+
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                Hasil Import
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <div class="mb-3">
+
+                <span class="text-muted">
+                    Mode Import:
+                </span>
+
+
+                {% if import_result.import_mode == "replace" %}
+
+                    <span class="badge bg-warning text-dark">
+                        Upload Ulang Semua Data
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-primary">
+                        Tambah Data
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="row g-3">
+
+
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small">
+                            Total File
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+
+                            {{ import_result.total_rows }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small">
+                            Data Baru
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+
+                            {{ import_result.inserted_count }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small">
+                            Data Diperbarui
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+
+                            {{ import_result.updated_count }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small">
+                            Tidak Ada di File Terbaru
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+
+                            {{ import_result.missing_count }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="mt-3">
+
+                <a
+                    href="/institutions"
+                    class="btn btn-outline-primary"
+                >
+
+                    Lihat Master Lembaga
+
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- FORM -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                Upload File
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <form
+                action="/institutions/import"
+                method="post"
+                enctype="multipart/form-data"
+                id="institution-import-form"
+            >
+
+
+                <!-- ========================================= -->
+                <!-- FILE -->
+                <!-- ========================================= -->
+
+                <div class="mb-4">
+
+                    <label
+                        for="file"
+                        class="form-label fw-semibold"
+                    >
+                        File Master Lembaga
+                    </label>
+
+
+                    <input
+                        class="form-control"
+                        type="file"
+                        id="file"
+                        name="file"
+                        accept=".xlsx,.xls,.csv"
+                        required
+                    >
+
+
+                    <div class="form-text">
+
+                        Format yang didukung:
+                        <strong>.xlsx</strong>,
+                        <strong>.xls</strong>,
+                        dan
+                        <strong>.csv</strong>.
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================= -->
+                <!-- MODE -->
+                <!-- ========================================= -->
+
+                <div class="mb-4">
+
+                    <label
+                        for="import_mode"
+                        class="form-label fw-semibold"
+                    >
+                        Mode Import
+                    </label>
+
+
+                    <select
+                        class="form-select"
+                        id="import_mode"
+                        name="import_mode"
+                        required
+                    >
+
+                        <option value="append">
+                            Tambah Data
+                        </option>
+
+                        <option value="replace">
+                            Upload Ulang Semua Data
+                        </option>
+
+                    </select>
+
+
+                    <div class="form-text">
+
+                        Pilih cara file digunakan
+                        untuk memperbarui Master Lembaga.
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================= -->
+                <!-- MODE INFORMATION -->
+                <!-- ========================================= -->
+
+                <div
+                    class="alert alert-light border"
+                    id="append-info"
+                >
+
+                    <div class="fw-semibold mb-2">
+                        Tambah Data
+                    </div>
+
+
+                    <ul class="mb-0">
+
+                        <li>
+                            ID baru akan ditambahkan.
+                        </li>
+
+                        <li>
+                            ID yang sudah tersedia akan
+                            diperbarui sesuai file.
+                        </li>
+
+                        <li>
+                            Data lama yang tidak terdapat
+                            di file tetap dipertahankan.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div
+                    class="alert alert-warning d-none"
+                    id="replace-info"
+                >
+
+                    <div class="fw-semibold mb-2">
+                        Upload Ulang Semua Data
+                    </div>
+
+
+                    <ul class="mb-0">
+
+                        <li>
+                            File dianggap sebagai Master
+                            Lembaga terbaru.
+                        </li>
+
+                        <li>
+                            ID yang tersedia akan diperbarui.
+                        </li>
+
+                        <li>
+                            ID baru akan ditambahkan.
+                        </li>
+
+                        <li>
+                            Data lama yang tidak terdapat
+                            di file akan dikeluarkan dari
+                            Master aktif.
+                        </li>
+
+                        <li>
+                            Data tersebut tidak dihapus
+                            secara fisik sehingga relasi
+                            database tetap aman.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <!-- ========================================= -->
+                <!-- IMPORTANT -->
+                <!-- ========================================= -->
+
+                <div class="alert alert-info">
+
+                    <strong>
+                        Catatan:
+                    </strong>
+
+                    Master Lembaga tidak menggunakan
+                    cleaning, auto-correct, staging,
+                    maupun review data.
+
+                    Sistem hanya memeriksa format file
+                    dan struktur data yang diperlukan.
+
+                </div>
+
+
+                <!-- ========================================= -->
+                <!-- BUTTON -->
+                <!-- ========================================= -->
+
+                <div class="d-flex flex-wrap gap-2">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Import Data
+                    </button>
+
+
+                    <a
+                        href="/institutions"
+                        class="btn btn-outline-secondary"
+                    >
+                        Batal
+                    </a>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- FORMAT FILE -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-sm">
+
+
+        <div
+            class="card-header
+                   bg-white
+                   d-flex flex-wrap
+                   justify-content-between
+                   align-items-center
+                   gap-2"
+        >
+
+
+            <div>
+
+                <h5 class="mb-1">
+                    Format File Master Lembaga
+                </h5>
+
+
+                <small class="text-muted">
+
+                    Nama kolom harus mengikuti
+                    format yang ditentukan.
+
+                </small>
+
+            </div>
+
+
+            <a
+                href="/institutions/template"
+                class="btn btn-outline-primary btn-sm"
+            >
+                Download Template
+            </a>
+
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+
+            <div class="table-responsive">
+
+
+                <table
+                    class="table table-hover
+                           align-middle mb-0"
+                >
+
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th style="width: 60px;">
+                                No.
+                            </th>
+
+                            <th>
+                                Nama Kolom
+                            </th>
+
+                            <th style="width: 120px;">
+                                Isi
+                            </th>
+
+                            <th>
+                                Keterangan
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        <tr>
+                            <td>1</td>
+                            <td><code>ID_LSPR</code></td>
+                            <td>
+                                <span class="badge bg-danger">
+                                    Wajib
+                                </span>
+                            </td>
+                            <td>
+                                ID unik lembaga.
+                                Contoh:
+                                <code>LSPr-001-IDN</code>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>2</td>
+                            <td><code>Name_LSPR</code></td>
+                            <td>
+                                <span class="badge bg-danger">
+                                    Wajib
+                                </span>
+                            </td>
+                            <td>
+                                Nama lembaga sertifikasi.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>3</td>
+                            <td>
+                                <code>Date_Start_Accreditation</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Tanggal mulai akreditasi.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>4</td>
+                            <td>
+                                <code>Date_End_Accreditation</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Tanggal akhir akreditasi.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>5</td>
+                            <td>
+                                <code>Status_Accreditation</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Status akreditasi lembaga.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>6</td>
+                            <td>
+                                <code>Amandemen</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Contoh:
+                                Amandemen ke-1
+                                (20 Februari 2025).
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>7</td>
+                            <td><code>Address</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Alamat lembaga.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>8</td>
+                            <td><code>Kab_Kota</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Kabupaten atau kota.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>9</td>
+                            <td><code>Propinsi</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Provinsi.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>10</td>
+                            <td><code>Kode_Pos</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Kode pos.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>11</td>
+                            <td><code>Telp</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Nomor telepon.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>12</td>
+                            <td><code>Fax</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Nomor fax.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>13</td>
+                            <td><code>Email</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Email lembaga.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>14</td>
+                            <td><code>CP</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Contact Person.
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>15</td>
+                            <td><code>NoHpCP</code></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    Opsional
+                                </span>
+                            </td>
+                            <td>
+                                Nomor HP Contact Person.
+                            </td>
+                        </tr>
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<!-- ======================================================== -->
+<!-- IMPORT MODE SCRIPT -->
+<!-- ======================================================== -->
+
+<script>
+
+    const importMode =
+        document.getElementById(
+            "import_mode"
+        );
+
+
+    const appendInfo =
+        document.getElementById(
+            "append-info"
+        );
+
+
+    const replaceInfo =
+        document.getElementById(
+            "replace-info"
+        );
+
+
+    const importForm =
+        document.getElementById(
+            "institution-import-form"
+        );
+
+
+    function updateModeInformation() {
+
+        if (
+            importMode.value === "replace"
+        ) {
+
+            appendInfo.classList.add(
+                "d-none"
+            );
+
+            replaceInfo.classList.remove(
+                "d-none"
+            );
+
+        } else {
+
+            replaceInfo.classList.add(
+                "d-none"
+            );
+
+            appendInfo.classList.remove(
+                "d-none"
+            );
+
+        }
+
+    }
+
+
+    importMode.addEventListener(
+        "change",
+        updateModeInformation
+    );
+
+
+    importForm.addEventListener(
+        "submit",
+        function(event) {
+
+            if (
+                importMode.value === "replace"
+            ) {
+
+                const confirmed = confirm(
+                    "Upload Ulang Semua Data akan "
+                    + "menjadikan file ini sebagai "
+                    + "Master Lembaga terbaru.\n\n"
+                    + "Data lama yang tidak terdapat "
+                    + "di file akan dikeluarkan dari "
+                    + "Master aktif.\n\n"
+                    + "Lanjutkan?"
+                );
+
+
+                if (!confirmed) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+
+        }
+    );
+
+
+    updateModeInformation();
+
+</script>
+
+
+{% endblock %}

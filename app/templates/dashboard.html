@@ -1,51 +1,707 @@
 {% extends "base.html" %}
 
-
 {% block content %}
 
-
-<div class="mb-4">
-
-    <h3 class="mb-1">
-
-        Dashboard
-
-    </h3>
-
-
-    <p class="text-muted mb-0">
-
-        Ringkasan data lembaga sertifikasi.
-
-    </p>
-
-</div>
-
-
-
-<!-- ======================================================== -->
-<!-- SUMMARY -->
-<!-- ======================================================== -->
-
-<div class="row g-3 mb-4">
+<style>
+    /* Token lokal (hex langsung) supaya halaman ini tidak bergantung pada cache style.css */
+    .dashboard-page {
+        --d-ink: #0c2a27;
+        --d-ink-2: #12403a;
+        --d-teal: #0f766e;
+        --d-teal-soft: #e4f2ef;
+        --d-green: #2f8f4e;
+        --d-green-soft: #e8f5ec;
+        --d-green-ink: #1d6a38;
+        --d-brass: #c99a2e;
+        --d-brass-light: #e8c26a;
+        --d-brass-soft: #fbf3dc;
+        --d-brass-ink: #86600f;
+        --d-slate: #8b9a94;
+        --d-slate-soft: #eceff0;
+        --d-border: #e0e6e0;
+        --d-text: #14201e;
+        --d-text-2: #44534f;
+        --d-text-3: #6b7a76;
+        --d-display: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+    }
 
 
-    <!-- TOTAL -->
+    /* ---------- HERO ---------- */
 
-    <div class="col-md-3">
+    .dash-hero {
+        position: relative;
+        overflow: hidden;
 
-        <div class="summary-card">
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 24px;
 
-            <div class="summary-label">
+        padding: 36px 38px;
+        border-radius: 22px;
 
-                Total Lembaga
+        background: linear-gradient(160deg, #12403a 0%, #0c2a27 55%, #081f1d 100%);
+        color: #ffffff;
+    }
+
+    /* Cincin konsentris ala pola pengaman sertifikat */
+    .dash-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+
+        background:
+            repeating-radial-gradient(
+                circle at 100% 0%,
+                transparent 0 17px,
+                rgba(232, 194, 106, .17) 17px 18px
+            );
+
+        -webkit-mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 64%);
+        mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 64%);
+    }
+
+    .dash-hero-text,
+    .dash-hero-actions {
+        position: relative;
+        z-index: 1;
+    }
+
+    .dash-hero h2 {
+        margin: 0 0 10px;
+        color: #ffffff;
+        font-family: var(--d-display);
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -.03em;
+        line-height: 1.1;
+    }
+
+    .dash-hero p {
+        max-width: 58ch;
+        margin: 0;
+        color: rgba(255, 255, 255, .78);
+        font-size: 14.5px;
+        line-height: 1.65;
+    }
+
+    .dash-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .dash-btn {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 9px 16px;
+
+        border: 1px solid transparent;
+        border-radius: 11px;
+
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+
+    .dash-btn-solid {
+        background: var(--d-brass);
+        color: #0c2a27;
+    }
+
+    .dash-btn-solid:hover {
+        background: var(--d-brass-light);
+        color: #0c2a27;
+    }
+
+    .dash-btn-ghost {
+        border-color: rgba(255, 255, 255, .28);
+        color: #ffffff;
+    }
+
+    .dash-btn-ghost:hover {
+        background: rgba(255, 255, 255, .09);
+        border-color: rgba(255, 255, 255, .5);
+        color: #ffffff;
+    }
+
+
+    /* ---------- JUDUL SEKSI ---------- */
+
+    .dashboard-section-title {
+        margin: 0;
+        color: var(--d-text);
+        font-size: 15.5px;
+        font-weight: 650;
+        letter-spacing: -.01em;
+    }
+
+    .dashboard-section-subtitle {
+        margin: 3px 0 0;
+        color: var(--d-text-3);
+        font-size: 13px;
+    }
+
+
+    /* ---------- KPI ---------- */
+
+    .kpi {
+        height: 100%;
+        padding: 20px 22px;
+
+        border: 1px solid var(--d-border);
+        border-radius: 16px;
+        background: #ffffff;
+    }
+
+    .kpi-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .kpi-icon {
+        flex: 0 0 40px;
+
+        width: 40px;
+        height: 40px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 12px;
+        font-size: 18px;
+    }
+
+    .kpi-icon.teal  { background: var(--d-teal-soft);  color: var(--d-teal); }
+    .kpi-icon.green { background: var(--d-green-soft); color: var(--d-green); }
+    .kpi-icon.brass { background: var(--d-brass-soft); color: var(--d-brass-ink); }
+    .kpi-icon.ink   { background: #dfe9e7;             color: var(--d-ink-2); }
+
+    .kpi-label {
+        color: var(--d-text-2);
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .kpi-value {
+        margin-top: 18px;
+        color: var(--d-text);
+        font-family: var(--d-display);
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -.035em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-note {
+        margin-top: 8px;
+        color: var(--d-text-3);
+        font-size: 12.5px;
+    }
+
+
+    /* ---------- PANEL ---------- */
+
+    .dashboard-panel {
+        height: 100%;
+        overflow: hidden;
+
+        border: 1px solid var(--d-border);
+        border-radius: 16px;
+        background: #ffffff;
+    }
+
+    .dashboard-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+
+        padding: 20px 24px 12px;
+    }
+
+    .dashboard-panel-body {
+        padding: 10px 24px 24px;
+    }
+
+
+    /* ---------- STATUS (donat) ---------- */
+
+    .status-overview {
+        display: grid;
+        grid-template-columns: 136px minmax(0, 1fr);
+        gap: 24px;
+        align-items: center;
+    }
+
+    .status-ring {
+        position: relative;
+
+        width: 132px;
+        height: 132px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 50%;
+        background:
+            conic-gradient(
+                #2f8f4e 0 var(--active-angle),
+                #8b9a94 var(--active-angle) var(--withdrawn-angle),
+                #c99a2e var(--withdrawn-angle) 360deg
+            );
+    }
+
+    .status-ring::after {
+        content: "";
+        position: absolute;
+
+        width: 92px;
+        height: 92px;
+
+        border-radius: 50%;
+        background: #ffffff;
+    }
+
+    .status-ring-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+
+    .status-ring-number {
+        color: var(--d-text);
+        font-family: var(--d-display);
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -.03em;
+        line-height: 1;
+    }
+
+    .status-ring-label {
+        margin-top: 4px;
+        color: var(--d-text-3);
+        font-size: 11.5px;
+    }
+
+    .status-legend-item {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+
+        padding: 9px 0;
+        border-bottom: 1px solid #edf0ed;
+    }
+
+    .status-legend-item:last-child {
+        border-bottom: 0;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .status-dot.active    { background: #2f8f4e; }
+    .status-dot.withdrawn { background: #8b9a94; }
+    .status-dot.other     { background: #c99a2e; }
+
+    .status-name {
+        min-width: 0;
+        color: var(--d-text-2);
+        font-size: 13.5px;
+    }
+
+    .status-count {
+        color: var(--d-text);
+        font-size: 14px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .status-detail {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid #edf0ed;
+    }
+
+    .status-detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+
+    .status-detail-name {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--d-text-3);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .status-detail-value {
+        color: var(--d-text-2);
+        font-weight: 600;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+
+    /* ---------- PROVINSI ---------- */
+
+    .province-row {
+        display: grid;
+        grid-template-columns: 22px minmax(110px, 170px) minmax(90px, 1fr) 44px;
+        gap: 12px;
+        align-items: center;
+
+        margin-bottom: 15px;
+    }
+
+    .province-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .province-rank {
+        color: var(--d-text-3);
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .province-name {
+        overflow: hidden;
+        color: var(--d-text-2);
+        font-size: 13.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .province-track {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eaefea;
+    }
+
+    .province-fill {
+        height: 100%;
+        min-width: 4px;
+        border-radius: 999px;
+        background: var(--d-teal);
+    }
+
+    .province-row:first-child .province-fill {
+        background: var(--d-brass);
+    }
+
+    .province-total {
+        color: var(--d-text);
+        font-size: 13.5px;
+        font-weight: 700;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+
+    /* ---------- RINGKASAN MASTER ---------- */
+
+    .master-stat {
+        height: 100%;
+        padding: 18px;
+
+        border: 1px solid var(--d-border);
+        border-radius: 14px;
+        background: #f7f9f6;
+    }
+
+    .master-stat-label {
+        color: var(--d-text-3);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .master-stat-value {
+        margin-top: 4px;
+        color: var(--d-text);
+        font-family: var(--d-display);
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -.03em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .master-stat-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+
+        margin-top: 10px;
+
+        color: var(--d-teal);
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .master-stat-link:hover {
+        color: #0b5f58;
+        text-decoration: underline;
+    }
+
+
+    /* ---------- TABEL TERBARU ---------- */
+
+    .recent-table {
+        margin: 0;
+    }
+
+    .recent-table th,
+    .recent-table td {
+        padding-left: 24px;
+    }
+
+    .recent-table td {
+        color: var(--d-text-2);
+        font-size: 13.5px;
+        vertical-align: middle;
+    }
+
+    .recent-id {
+        color: var(--d-text);
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .institution-name {
+        max-width: 360px;
+        color: var(--d-text);
+        font-weight: 600;
+    }
+
+    .status-badge-dashboard {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        padding: 5px 11px;
+
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-badge-dashboard::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .status-badge-dashboard.active {
+        background: var(--d-green-soft);
+        color: var(--d-green-ink);
+    }
+
+    .status-badge-dashboard.withdrawn {
+        background: var(--d-slate-soft);
+        color: #55645f;
+    }
+
+    .status-badge-dashboard.other {
+        background: var(--d-brass-soft);
+        color: var(--d-brass-ink);
+    }
+
+    .empty-dashboard {
+        padding: 30px 12px;
+        color: var(--d-text-3);
+        font-size: 13.5px;
+        text-align: center;
+    }
+
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 767.98px) {
+
+        .dash-hero {
+            padding: 26px 22px;
+        }
+
+        .dash-hero h2 {
+            font-size: 28px;
+        }
+
+        .dashboard-panel-header {
+            padding: 18px 18px 10px;
+        }
+
+        .dashboard-panel-body {
+            padding: 8px 18px 20px;
+        }
+
+        .status-overview {
+            grid-template-columns: 1fr;
+            justify-items: center;
+        }
+
+        .status-legend {
+            width: 100%;
+        }
+
+        .province-row {
+            grid-template-columns: 18px 96px minmax(70px, 1fr) 36px;
+            gap: 8px;
+        }
+
+        .recent-table th,
+        .recent-table td {
+            padding-left: 16px;
+        }
+
+        .kpi-value {
+            font-size: 34px;
+        }
+    }
+</style>
+
+
+<div class="dashboard-page">
+
+    <!-- ==================================================== -->
+    <!-- HERO -->
+    <!-- ==================================================== -->
+
+    <section class="dash-hero mb-4">
+
+        <div class="dash-hero-text">
+
+            <h2>Dashboard Sistem Database</h2>
+
+            <p>
+                Ringkasan kondisi Master Lembaga,
+                Master Produk, dan Master Skema Sertifikasi
+                berdasarkan data yang tersimpan di sistem.
+            </p>
+
+        </div>
+
+        <div class="dash-hero-actions">
+
+            <a href="/scopes/import" class="dash-btn dash-btn-solid">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                Upload data
+            </a>
+
+            <a href="/scopes/review" class="dash-btn dash-btn-ghost">
+                <i class="bi bi-check2-square"></i>
+                Review &amp; approval
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================== -->
+    <!-- KPI -->
+    <!-- ==================================================== -->
+
+    <div class="mb-3">
+
+        <h5 class="dashboard-section-title">Ringkasan Utama</h5>
+
+        <p class="dashboard-section-subtitle">
+            Gambaran cepat data yang saat ini tersedia.
+        </p>
+
+    </div>
+
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl-3">
+
+            <div class="kpi">
+
+                <div class="kpi-head">
+                    <span class="kpi-icon teal"><i class="bi bi-building"></i></span>
+                    <span class="kpi-label">Total Lembaga</span>
+                </div>
+
+                <div class="kpi-value">{{ total_institution }}</div>
+
+                <div class="kpi-note">Lembaga tersedia pada master</div>
 
             </div>
 
+        </div>
 
-            <div class="summary-value">
 
-                {{ total_institution }}
+        <div class="col-sm-6 col-xl-3">
+
+            <div class="kpi">
+
+                <div class="kpi-head">
+                    <span class="kpi-icon green"><i class="bi bi-patch-check-fill"></i></span>
+                    <span class="kpi-label">Lembaga Active</span>
+                </div>
+
+                <div class="kpi-value">{{ active_count }}</div>
+
+                <div class="kpi-note">Status akreditasi Active</div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-sm-6 col-xl-3">
+
+            <div class="kpi">
+
+                <div class="kpi-head">
+                    <span class="kpi-icon brass"><i class="bi bi-box-seam-fill"></i></span>
+                    <span class="kpi-label">Jalur Master Produk</span>
+                </div>
+
+                <div class="kpi-value">{{ total_product_paths }}</div>
+
+                <div class="kpi-note">Kombinasi skema sampai jenis</div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-sm-6 col-xl-3">
+
+            <div class="kpi">
+
+                <div class="kpi-head">
+                    <span class="kpi-icon ink"><i class="bi bi-diagram-3-fill"></i></span>
+                    <span class="kpi-label">Skema Sertifikasi</span>
+                </div>
+
+                <div class="kpi-value">{{ total_certification_schemes }}</div>
+
+                <div class="kpi-note">Referensi skema sertifikasi</div>
 
             </div>
 
@@ -54,23 +710,201 @@
     </div>
 
 
+    <!-- ==================================================== -->
+    <!-- VISUALISASI -->
+    <!-- ==================================================== -->
 
-    <!-- ACTIVE -->
+    <div class="row g-3 mb-4">
 
-    <div class="col-md-3">
+        <!-- STATUS -->
 
-        <div class="summary-card">
+        <div class="col-lg-5">
 
-            <div class="summary-label">
+            <div class="dashboard-panel">
 
-                Active
+                <div class="dashboard-panel-header">
+
+                    <div>
+                        <h5 class="dashboard-section-title">
+                            Distribusi Status Lembaga
+                        </h5>
+
+                        <p class="dashboard-section-subtitle">
+                            Komposisi status akreditasi lembaga.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-panel-body">
+
+                    {% set active_angle =
+                        (active_count / total_institution * 360)
+                        if total_institution else 0
+                    %}
+
+                    {% set withdrawn_angle =
+                        active_angle
+                        +
+                        (
+                            withdrawn_count
+                            / total_institution
+                            * 360
+                            if total_institution
+                            else 0
+                        )
+                    %}
+
+                    <div class="status-overview">
+
+                        <div
+                            class="status-ring"
+                            style="
+                                --active-angle: {{ active_angle }}deg;
+                                --withdrawn-angle: {{ withdrawn_angle }}deg;
+                            "
+                        >
+
+                            <div class="status-ring-content">
+
+                                <div class="status-ring-number">
+                                    {{ total_institution }}
+                                </div>
+
+                                <div class="status-ring-label">
+                                    Total
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="status-legend">
+
+                            <div class="status-legend-item">
+                                <span class="status-dot active"></span>
+                                <span class="status-name">Active</span>
+                                <span class="status-count">{{ active_count }}</span>
+                            </div>
+
+
+                            <div class="status-legend-item">
+                                <span class="status-dot withdrawn"></span>
+                                <span class="status-name">Withdrawn</span>
+                                <span class="status-count">{{ withdrawn_count }}</span>
+                            </div>
+
+
+                            <div class="status-legend-item">
+                                <span class="status-dot other"></span>
+                                <span class="status-name">Status lainnya / kosong</span>
+                                <span class="status-count">{{ other_status_count }}</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if status_data %}
+
+                    <div class="status-detail">
+
+                        {% for item in status_data %}
+
+                        <div class="status-detail-row">
+
+                            <div class="status-detail-name">
+                                {{ item.status_name }}
+                            </div>
+
+                            <div class="status-detail-value">
+                                {{ item.total }}
+                                ·
+                                {{ item.percentage }}%
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
 
             </div>
 
+        </div>
 
-            <div class="summary-value text-success">
 
-                {{ active_count }}
+        <!-- PROVINSI -->
+
+        <div class="col-lg-7">
+
+            <div class="dashboard-panel">
+
+                <div class="dashboard-panel-header">
+
+                    <div>
+                        <h5 class="dashboard-section-title">
+                            Sebaran Lembaga per Provinsi
+                        </h5>
+
+                        <p class="dashboard-section-subtitle">
+                            8 provinsi dengan jumlah lembaga terbanyak.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-panel-body">
+
+                    {% if province_data %}
+
+                        {% for item in province_data %}
+
+                        <div class="province-row">
+
+                            <div class="province-rank">
+                                {{ loop.index }}
+                            </div>
+
+                            <div
+                                class="province-name"
+                                title="{{ item.province }}"
+                            >
+                                {{ item.province }}
+                            </div>
+
+                            <div class="province-track">
+                                <div
+                                    class="province-fill"
+                                    style="width: {{ item.percentage }}%;"
+                                ></div>
+                            </div>
+
+                            <div class="province-total">
+                                {{ item.total }}
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="empty-dashboard">
+                            Belum ada data provinsi.
+                        </div>
+
+                    {% endif %}
+
+                </div>
 
             </div>
 
@@ -79,23 +913,73 @@
     </div>
 
 
+    <!-- ==================================================== -->
+    <!-- RINGKASAN MASTER DATA -->
+    <!-- ==================================================== -->
 
-    <!-- WITHDRAWN -->
+    <div class="dashboard-panel mb-4">
 
-    <div class="col-md-3">
+        <div class="dashboard-panel-header">
 
-        <div class="summary-card">
+            <div>
+                <h5 class="dashboard-section-title">
+                    Ringkasan Master Data
+                </h5>
 
-            <div class="summary-label">
-
-                Withdrawn
-
+                <p class="dashboard-section-subtitle">
+                    Jumlah referensi utama yang sudah tersedia di sistem.
+                </p>
             </div>
 
+        </div>
 
-            <div class="summary-value text-secondary">
 
-                {{ withdrawn_count }}
+        <div class="dashboard-panel-body">
+
+            <div class="row g-3">
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="master-stat">
+                        <div class="master-stat-label">Master Lembaga</div>
+                        <div class="master-stat-value">{{ total_institution }}</div>
+                        <a class="master-stat-link" href="/institutions">
+                            Lihat data <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="master-stat">
+                        <div class="master-stat-label">Skema Master Produk</div>
+                        <div class="master-stat-value">{{ total_product_schemes }}</div>
+                        <a class="master-stat-link" href="/products">
+                            Lihat produk <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="master-stat">
+                        <div class="master-stat-label">Skema Sertifikasi</div>
+                        <div class="master-stat-value">{{ total_certification_schemes }}</div>
+                        <a class="master-stat-link" href="/certification-schemes">
+                            Lihat skema <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="master-stat">
+                        <div class="master-stat-label">Total Amandemen</div>
+                        <div class="master-stat-value">{{ total_amendment }}</div>
+                        <a class="master-stat-link" href="/institutions">
+                            Lihat lembaga <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
 
             </div>
 
@@ -104,82 +988,118 @@
     </div>
 
 
+    <!-- ==================================================== -->
+    <!-- LEMBAGA TERBARU -->
+    <!-- ==================================================== -->
 
-    <!-- LAST SYNC -->
+    <div class="dashboard-panel">
 
-    <div class="col-md-3">
+        <div class="dashboard-panel-header">
 
-        <div class="summary-card">
+            <div>
+                <h5 class="dashboard-section-title">
+                    Data Lembaga Terbaru
+                </h5>
 
-            <div class="summary-label">
-
-                Terakhir Sinkron
-
+                <p class="dashboard-section-subtitle">
+                    Lima data lembaga terakhir yang tersimpan pada master.
+                </p>
             </div>
 
+            <a
+                href="/institutions"
+                class="btn btn-sm btn-outline-primary"
+            >
+                Lihat Semua
+            </a>
 
-            <div class="sync-value">
+        </div>
 
-                {% if last_sync %}
 
-                    {{ last_sync.finished_at or last_sync.started_at }}
+        <div class="table-responsive">
+
+            <table class="table recent-table">
+
+                <thead>
+
+                    <tr>
+                        <th>ID Lembaga</th>
+                        <th>Nama Lembaga</th>
+                        <th>Provinsi</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for item in recent_institutions %}
+
+                    <tr>
+
+                        <td class="recent-id">
+                            {{ item.id_lspro }}
+                        </td>
+
+                        <td>
+                            <div class="institution-name">
+                                {{ item.name_lspro }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {{ item.propinsi or "-" }}
+                        </td>
+
+                        <td>
+
+                            {% set current_status =
+                                (item.status_accreditation or "")
+                                | lower
+                            %}
+
+                            {% if current_status == "active" %}
+
+                                <span class="status-badge-dashboard active">
+                                    {{ item.status_accreditation }}
+                                </span>
+
+                            {% elif current_status == "withdrawn" %}
+
+                                <span class="status-badge-dashboard withdrawn">
+                                    {{ item.status_accreditation }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge-dashboard other">
+                                    {{ item.status_accreditation or "Belum Diisi" }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
 
                 {% else %}
 
-                    Belum pernah sinkron
+                    <tr>
+                        <td colspan="4" class="empty-dashboard">
+                            Belum ada data lembaga.
+                        </td>
+                    </tr>
 
-                {% endif %}
+                {% endfor %}
 
-            </div>
+                </tbody>
+
+            </table>
 
         </div>
 
     </div>
 
-
 </div>
-
-
-
-<!-- ======================================================== -->
-<!-- SYNC INFORMATION -->
-<!-- ======================================================== -->
-
-<div class="card shadow-sm">
-
-    <div class="card-body">
-
-
-        <h5>
-
-            Sumber Data Master Lembaga
-
-        </h5>
-
-
-        <p class="text-muted mb-3">
-
-            Master Lembaga nantinya akan
-            disinkronkan langsung dari Google Sheets.
-
-        </p>
-
-
-        <div class="alert alert-info mb-0">
-
-            Koneksi Google Sheets belum diaktifkan.
-
-            <br>
-
-            Saat ini sistem masih menggunakan
-            database lokal SQLite.
-
-        </div>
-
-
-    </div>
-
-</div>
-
 
 {% endblock %}

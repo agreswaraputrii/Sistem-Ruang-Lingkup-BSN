@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="container-fluid py-4">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div
+        class="d-flex flex-wrap
+               justify-content-between
+               align-items-start
+               gap-3 mb-4"
+    >
+
+
+        <div>
+
+            <h3 class="mb-1">
+                Edit Data Lembaga
+            </h3>
+
+            <p class="text-muted mb-0">
+                Perbarui data lembaga dan riwayat amandemen.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/institutions"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- ERROR -->
+    <!-- ===================================================== -->
+
+    {% if status == "failed" %}
+
+    <div
+        class="alert alert-danger
+               alert-dismissible fade show"
+    >
+
+        <strong>
+            Gagal.
+        </strong>
+
+        {{ message }}
+
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        >
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- FORM -->
+    <!-- ===================================================== -->
+
+    <form
+        method="post"
+        action="/institutions/{{ institution.institution_id }}/edit"
+    >
+
+
+        <!-- ================================================= -->
+        <!-- DATA LEMBAGA -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Data Lembaga
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+
+                            ID LSPro
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="id_lspro"
+                            class="form-control"
+                            value="{{ institution.id_lspro or '' }}"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+
+                            Nama Lembaga
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="name_lspro"
+                            class="form-control"
+                            value="{{ institution.name_lspro or '' }}"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Mulai Akreditasi
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="date_start_accreditation"
+                            class="form-control"
+                            value="{{ institution.date_start_accreditation or '' }}"
+                            placeholder="YYYY-MM-DD"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Akhir Akreditasi
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="date_end_accreditation"
+                            class="form-control"
+                            value="{{ institution.date_end_accreditation or '' }}"
+                            placeholder="YYYY-MM-DD"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Status Akreditasi
+
+                        </label>
+
+
+                        <select
+                            name="status_accreditation"
+                            class="form-select"
+                        >
+
+
+                            <option
+                                value=""
+
+                                {% if not institution.status_accreditation %}
+                                selected
+                                {% endif %}
+                            >
+                                -
+                            </option>
+
+
+                            <option
+                                value="Active"
+
+                                {% if institution.status_accreditation == "Active" %}
+                                selected
+                                {% endif %}
+                            >
+                                Active
+                            </option>
+
+
+                            <option
+                                value="Withdrawn"
+
+                                {% if institution.status_accreditation == "Withdrawn" %}
+                                selected
+                                {% endif %}
+                            >
+                                Withdrawn
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label fw-semibold">
+                            Alamat
+                        </label>
+
+
+                        <textarea
+                            name="address"
+                            class="form-control"
+                            rows="3"
+                        >{{ institution.address or '' }}</textarea>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Kab/Kota
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="kab_kota"
+                            class="form-control"
+                            value="{{ institution.kab_kota or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Provinsi
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="propinsi"
+                            class="form-control"
+                            value="{{ institution.propinsi or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Kode Pos
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="kode_pos"
+                            class="form-control"
+                            value="{{ institution.kode_pos or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Telepon
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="telp"
+                            class="form-control"
+                            value="{{ institution.telp or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Fax
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="fax"
+                            class="form-control"
+                            value="{{ institution.fax or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Email
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="email"
+                            class="form-control"
+                            value="{{ institution.email or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Contact Person
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="cp"
+                            class="form-control"
+                            value="{{ institution.cp or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            No. HP Contact Person
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="no_hp_cp"
+                            class="form-control"
+                            value="{{ institution.no_hp_cp or '' }}"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AMANDEMEN -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div
+                class="card-header
+                       bg-white
+                       py-3
+                       d-flex
+                       justify-content-between
+                       align-items-center"
+            >
+
+
+                <div>
+
+                    <h5 class="mb-1">
+                        Amandemen
+                    </h5>
+
+                    <small class="text-muted">
+                        Tambah, edit, atau hapus riwayat amandemen.
+                    </small>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="addAmendmentRow()"
+                >
+                    + Tambah Amandemen
+                </button>
+
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div
+                    id="amendment-container"
+                    class="d-flex flex-column gap-2"
+                >
+
+
+                    {% for amendment in amendments %}
+
+
+                    <div
+                        class="row g-2 amendment-row"
+                    >
+
+
+                        <div class="col-md-3">
+
+                            <label class="form-label small">
+                                Amandemen ke-
+                            </label>
+
+
+                            <input
+                                type="number"
+                                min="1"
+                                name="amendment_no"
+                                class="form-control"
+                                value="{{ amendment.amendment_no }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-7">
+
+                            <label class="form-label small">
+                                Tanggal Amandemen
+                            </label>
+
+
+                            <input
+                                type="text"
+                                name="amendment_date"
+                                class="form-control"
+                                value="{{ amendment.amendment_date or '' }}"
+                                placeholder="YYYY-MM-DD"
+                            >
+
+                        </div>
+
+
+                        <div
+                            class="col-md-2
+                                   d-flex
+                                   align-items-end"
+                        >
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-danger w-100"
+                                onclick="removeAmendmentRow(this)"
+                            >
+                                Hapus
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+
+                    {% endfor %}
+
+
+                    {% if not amendments %}
+
+                    <div
+                        class="text-muted"
+                        id="empty-amendment-message"
+                    >
+                        Belum ada data amandemen.
+                    </div>
+
+                    {% endif %}
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- INFORMATION -->
+        <!-- ================================================= -->
+
+        <div class="alert alert-light border">
+
+            <strong>
+                Catatan:
+            </strong>
+
+            Perubahan akan langsung disimpan ke Master Lembaga
+            dan data Amandemen.
+
+            <br>
+
+            Sistem tidak menggunakan cleaning,
+            auto-correct, staging, atau review.
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- ACTION -->
+        <!-- ================================================= -->
+
+        <div class="d-flex gap-2">
+
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Simpan Perubahan
+            </button>
+
+
+            <a
+                href="/institutions"
+                class="btn btn-outline-secondary"
+            >
+                Batal
+            </a>
+
+
+        </div>
+
+
+    </form>
+
+
+</div>
+
+
+<!-- ======================================================== -->
+<!-- SCRIPT AMANDEMEN -->
+<!-- ======================================================== -->
+
+<script>
+
+    function addAmendmentRow() {
+
+        const container =
+            document.getElementById(
+                "amendment-container"
+            );
+
+
+        const emptyMessage =
+            document.getElementById(
+                "empty-amendment-message"
+            );
+
+
+        if (emptyMessage) {
+
+            emptyMessage.remove();
+
+        }
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "row g-2 amendment-row";
+
+
+        row.innerHTML = `
+            <div class="col-md-3">
+
+                <label class="form-label small">
+                    Amandemen ke-
+                </label>
+
+                <input
+                    type="number"
+                    min="1"
+                    name="amendment_no"
+                    class="form-control"
+                >
+
+            </div>
+
+            <div class="col-md-7">
+
+                <label class="form-label small">
+                    Tanggal Amandemen
+                </label>
+
+                <input
+                    type="text"
+                    name="amendment_date"
+                    class="form-control"
+                    placeholder="YYYY-MM-DD"
+                >
+
+            </div>
+
+            <div
+                class="col-md-2
+                       d-flex
+                       align-items-end"
+            >
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger w-100"
+                    onclick="removeAmendmentRow(this)"
+                >
+                    Hapus
+                </button>
+
+            </div>
+        `;
+
+
+        container.appendChild(row);
+
+    }
+
+
+    function removeAmendmentRow(
+        button
+    ) {
+
+        const row =
+            button.closest(
+                ".amendment-row"
+            );
+
+
+        row.remove();
+
+
+        const container =
+            document.getElementById(
+                "amendment-container"
+            );
+
+
+        const remainingRows =
+            container.querySelectorAll(
+                ".amendment-row"
+            );
+
+
+        if (
+            remainingRows.length === 0
+        ) {
+
+            const emptyMessage =
+                document.createElement(
+                    "div"
+                );
+
+
+            emptyMessage.id =
+                "empty-amendment-message";
+
+
+            emptyMessage.className =
+                "text-muted";
+
+
+            emptyMessage.textContent =
+                "Belum ada data amandemen.";
+
+
+            container.appendChild(
+                emptyMessage
+            );
+
+        }
+
+    }
+
+</script>
+
+
+{% endblock %}

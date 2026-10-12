@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+        <div>
+            <h3 class="mb-1">
+                Ruang Lingkup Lembaga
+            </h3>
+
+            <p class="text-muted mb-0">
+                Data Ruang Lingkup yang sudah melalui proses review dan commit.
+            </p>
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <a
+                href="/scopes/review"
+                class="btn btn-outline-primary"
+            >
+                Review Data
+            </a>
+
+            <a
+                href="/scopes/import"
+                class="btn btn-primary"
+            >
+                Import Ruang Lingkup
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% if result == "success" %}
+
+    <div class="alert alert-success alert-dismissible fade show">
+
+        <strong>
+            Berhasil.
+        </strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    {% if result == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>
+            Gagal.
+        </strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form
+                method="get"
+                action="/scopes"
+            >
+
+                <div class="row g-2">
+
+                    <div class="col-md-10">
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control"
+                            value="{{ search }}"
+                            placeholder="Cari LPK, lembaga, produk, standar, atau skema sertifikasi..."
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-2">
+
+                        <div class="d-flex gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Cari
+                            </button>
+
+                            <a
+                                href="/scopes"
+                                class="btn btn-outline-secondary"
+                            >
+                                Reset
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Total Scope:
+                {{ total }}
+            </strong>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table
+                class="table table-hover align-middle mb-0"
+                style="min-width: 1550px;"
+            >
+
+                <thead class="table-light">
+
+                    <tr>
+                        <th>No. LPK</th>
+                        <th>No. Urut</th>
+                        <th>Skema</th>
+                        <th>Kategori</th>
+                        <th>Sub Kategori</th>
+                        <th>Jenis Produk/Proses/Jasa</th>
+                        <th>Standar</th>
+                        <th>Skema Sertifikasi</th>
+                        <th>Catatan</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for item in items %}
+
+                <tr>
+
+                    <td style="min-width: 220px;">
+
+                        <div class="fw-semibold">
+                            {{ item.id_lspro }}
+                        </div>
+
+                        <div class="small text-muted">
+                            {{ item.name_lspro or "-" }}
+                        </div>
+
+                    </td>
+
+
+                    <td>
+                        {{ item.product_order_no or "-" }}
+                    </td>
+
+
+                    <td>
+                        {{ item.scheme_name or "-" }}
+                    </td>
+
+
+                    <td>
+
+                        {% if item.category_status == "VALUE" %}
+                            {{ item.category_name or "-" }}
+                        {% elif item.category_status == "NOT_APPLICABLE" %}
+                            -
+                        {% else %}
+                            <span class="text-muted">
+                                Kosong
+                            </span>
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.subcategory_status == "VALUE" %}
+                            {{ item.subcategory_name or "-" }}
+                        {% elif item.subcategory_status == "NOT_APPLICABLE" %}
+                            -
+                        {% else %}
+                            <span class="text-muted">
+                                Kosong
+                            </span>
+                        {% endif %}
+
+                    </td>
+
+
+                    <td style="min-width: 260px;">
+
+                        {% if item.product_service_status == "VALUE" %}
+                            {{ item.product_service_name or "-" }}
+                        {% elif item.product_service_status == "NOT_APPLICABLE" %}
+                            -
+                        {% else %}
+                            <span class="text-muted">
+                                Kosong
+                            </span>
+                        {% endif %}
+
+                    </td>
+
+
+                    <td style="min-width: 350px;">
+
+                        {% if item.standard_numbers %}
+
+                            {% set numbers = item.standard_numbers.split(" || ") %}
+                            {% set titles = (item.standard_titles or "").split(" || ") %}
+
+                            {% for number in numbers %}
+
+                                <div class="mb-2">
+
+                                    <div class="fw-semibold">
+                                        {{ number }}
+                                    </div>
+
+                                    {% if loop.index0 < titles|length %}
+
+                                    <div class="small text-muted">
+                                        {{ titles[loop.index0] }}
+                                    </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td style="min-width: 300px;">
+
+                        {% if item.certification_scheme_code %}
+
+                        <div class="small text-success">
+                            {{ item.certification_scheme_code }}
+                        </div>
+
+                        {% endif %}
+
+                        <div>
+                            {{ item.certification_scheme_name or "-" }}
+                        </div>
+
+                    </td>
+
+
+                    <td style="min-width: 220px;">
+                        {{ item.notes or "-" }}
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="text-center text-muted py-5"
+                    >
+                        Belum ada data Ruang Lingkup final.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .workflow-shell {max-width: 1450px;margin:0 auto;}
+    .workflow-tabs {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+    .workflow-tab {text-decoration:none;padding:10px 15px;border-radius:9px;border:1px solid #dbe3ee;color:#475569;background:#fff;font-weight:600;font-size:14px;}
+    .workflow-tab.active {background:#0d6efd;color:#fff;border-color:#0d6efd;}
+    .summary-card {border:1px solid #e2e8f0;border-radius:12px;height:100%;}
+    .summary-label {font-size:12px;color:#64748b;}
+    .summary-value {font-size:24px;font-weight:750;}
+    .data-card {border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;}
+    .decision-btns {display:flex;gap:6px;flex-wrap:wrap;}
+</style>
+
+<div class="container-fluid py-4">
+<div class="workflow-shell">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+
+        <div>
+            <div class="small text-muted">
+                {{ batch.batch_code }} · {{ batch.file_name }}
+            </div>
+
+            <h3 class="mb-1">
+                Review Auto-Correction
+            </h3>
+
+            <p class="text-muted mb-0">
+                Pilih apakah hasil koreksi otomatis digunakan atau nilai asli dipertahankan.
+            </p>
+        </div>
+
+        <a href="/scopes/history" class="btn btn-outline-secondary">
+            Riwayat Upload
+        </a>
+
+    </div>
+
+
+    <div class="workflow-tabs">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/corrections"
+            class="workflow-tab active"
+        >
+            1. Auto-Correction
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="workflow-tab"
+        >
+            2. Review Data
+            {% if unresolved_blocking %}
+                <span class="badge bg-danger ms-1">
+                    {{ unresolved_blocking }}
+                </span>
+            {% endif %}
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/preview"
+            class="workflow-tab"
+        >
+            3. Preview & Commit
+        </a>
+
+    </div>
+
+
+    {% if result == "failed" %}
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+    {% endif %}
+
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="summary-label">Pending</div>
+                    <div class="summary-value text-warning">
+                        {{ pending_count }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="summary-label">Approved</div>
+                    <div class="summary-value text-success">
+                        {{ approved_count }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="summary-label">Pakai Nilai Asli</div>
+                    <div class="summary-value">
+                        {{ rejected_count }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="summary-label">Manual</div>
+                    <div class="summary-value text-primary">
+                        {{ manual_count }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            {% if batch.status not in ["COMMITTED", "REJECTED", "FAILED"] and pending_count > 0 %}
+
+            <form
+                method="post"
+                action="/scopes/batches/{{ batch.batch_id }}/corrections/approve-all"
+                onsubmit="return confirm('Setujui semua auto-correction yang masih Pending?');"
+            >
+                <button type="submit" class="btn btn-success">
+                    Approve Semua Pending
+                </button>
+            </form>
+
+            {% endif %}
+
+
+            <a
+                href="/scopes/batches/{{ batch.batch_id }}/corrections"
+                class="btn {% if not status_filter %}btn-dark{% else %}btn-outline-dark{% endif %}"
+            >
+                Semua
+            </a>
+
+            <a
+                href="/scopes/batches/{{ batch.batch_id }}/corrections?status_filter=PENDING"
+                class="btn {% if status_filter == 'PENDING' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+            >
+                Pending
+            </a>
+
+            <a
+                href="/scopes/batches/{{ batch.batch_id }}/corrections?status_filter=APPROVED"
+                class="btn {% if status_filter == 'APPROVED' %}btn-success{% else %}btn-outline-success{% endif %}"
+            >
+                Approved
+            </a>
+
+            <a
+                href="/scopes/batches/{{ batch.batch_id }}/corrections?status_filter=REJECTED"
+                class="btn {% if status_filter == 'REJECTED' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+            >
+                Nilai Asli
+            </a>
+
+        </div>
+
+
+        <select
+            class="form-select"
+            style="width:120px;"
+            onchange="location.href='/scopes/batches/{{ batch.batch_id }}/corrections?status_filter={{ status_filter }}&per_page='+this.value"
+        >
+            {% for value in [25, 50, 100] %}
+            <option
+                value="{{ value }}"
+                {% if pager.per_page == value %}selected{% endif %}
+            >
+                {{ value }} / page
+            </option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+
+    <div class="card data-card">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Auto-Correction
+            </strong>
+
+            <span class="text-muted ms-2">
+                {{ pager.start_no }}–{{ pager.end_no }} dari {{ pager.total }}
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0" style="min-width:1250px;">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Row</th>
+                        <th>LPK / No. Urut</th>
+                        <th>Field</th>
+                        <th>Nilai Sebelum</th>
+                        <th>Hasil Auto-Correct</th>
+                        <th>Rule</th>
+                        <th>Confidence</th>
+                        <th>Keputusan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in corrections %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.row_no }}
+                        </td>
+
+                        <td style="min-width:160px;">
+                            <div class="fw-semibold">
+                                {{ item.raw_no_lpk or "-" }}
+                            </div>
+                            <div class="small text-muted">
+                                No. Urut:
+                                {{ item.raw_product_order_no or "-" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <code>
+                                {{ item.field_name }}
+                            </code>
+                        </td>
+
+                        <td style="min-width:220px;">
+                            {{ item.original_value or "(kosong)" }}
+                        </td>
+
+                        <td style="min-width:220px;">
+                            <strong class="text-success">
+                                {{ item.corrected_value or "(kosong)" }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <div>
+                                {{ item.correction_type }}
+                            </div>
+                            <div class="small text-muted">
+                                {{ item.rule_id or "-" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if item.confidence is not none %}
+                                {{ "%.0f"|format(item.confidence) }}%
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if item.approval_status == "PENDING" %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif item.approval_status == "APPROVED" %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif item.approval_status == "REJECTED" %}
+                                <span class="badge bg-secondary">Nilai Asli</span>
+                            {% else %}
+                                <span class="badge bg-primary">{{ item.approval_status }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td style="min-width:190px;">
+
+                            {% if item.approval_status == "PENDING" and batch.status not in ["COMMITTED", "REJECTED", "FAILED"] %}
+
+                            <div class="decision-btns">
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/corrections/{{ item.correction_id }}/approve"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-success"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/corrections/{{ item.correction_id }}/reject"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Pertahankan nilai asli"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+
+                            </div>
+
+                            {% else %}
+
+                            <span class="small text-muted">
+                                Selesai
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            Tidak ada auto-correction pada filter ini.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    {% if pager.total_pages > 1 %}
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+
+        <div class="small text-muted">
+            Halaman {{ pager.page }} dari {{ pager.total_pages }}
+        </div>
+
+        <div class="btn-group">
+
+            {% if pager.page > 1 %}
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/corrections?page={{ pager.page - 1 }}&per_page={{ pager.per_page }}&status_filter={{ status_filter }}"
+            >
+                Sebelumnya
+            </a>
+            {% endif %}
+
+            {% if pager.page < pager.total_pages %}
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/corrections?page={{ pager.page + 1 }}&per_page={{ pager.per_page }}&status_filter={{ status_filter }}"
+            >
+                Berikutnya
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="d-flex justify-content-end mt-4">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="btn btn-primary"
+        >
+            Lanjut ke Review Data →
+        </a>
+
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

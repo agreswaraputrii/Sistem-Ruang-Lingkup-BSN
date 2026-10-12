@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                Import Master Skema Sertifikasi
+            </h3>
+
+            <p class="text-muted mb-0">
+                Import data resmi melalui Excel atau CSV.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/certification-schemes"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+    </div>
+
+
+    {% if success_message %}
+
+    <div class="alert alert-success">
+
+        <strong>Berhasil.</strong>
+
+        {{ success_message }}
+
+    </div>
+
+    {% endif %}
+
+
+    {% if error_message %}
+
+    <div class="alert alert-danger">
+
+        <strong>Gagal.</strong>
+
+        {{ error_message }}
+
+    </div>
+
+    {% endif %}
+
+
+    {% if import_result %}
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-white">
+
+            <strong>
+                Hasil Import
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <table class="table table-sm mb-0">
+
+                <tr>
+
+                    <th style="width: 250px;">
+                        Mode
+                    </th>
+
+                    <td>
+                        {{ import_result.import_mode }}
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+                        Total Baris
+                    </th>
+
+                    <td>
+                        {{ import_result.total_rows }}
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+                        Data Baru
+                    </th>
+
+                    <td>
+                        {{ import_result.inserted_count }}
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+                        Data Sudah Ada
+                    </th>
+
+                    <td>
+                        {{ import_result.existing_count }}
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Upload File
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form
+                method="post"
+                action="/certification-schemes/import"
+                enctype="multipart/form-data"
+                id="importForm"
+            >
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        File Master Skema Sertifikasi
+                    </label>
+
+                    <input
+                        type="file"
+                        name="file"
+                        class="form-control"
+                        accept=".xlsx,.xls,.csv"
+                        required
+                    >
+
+                    <div class="form-text">
+                        Format: XLSX, XLS, atau CSV.
+                    </div>
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+                        Mode Import
+                    </label>
+
+
+                    <select
+                        name="import_mode"
+                        id="import_mode"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="append">
+                            Tambah Data
+                        </option>
+
+                        <option value="replace">
+                            Upload Ulang Semua Data
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="alert alert-warning">
+
+                    <strong>Upload Ulang Semua Data</strong>
+                    akan mengganti seluruh isi Master Skema Sertifikasi
+                    dengan data dari file yang di-upload.
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Import Data
+                    </button>
+
+
+                    <a
+                        href="/certification-schemes/template"
+                        class="btn btn-outline-primary"
+                    >
+                        Download Template
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document
+    .getElementById("importForm")
+    .addEventListener(
+        "submit",
+        function (event) {
+
+            const mode =
+                document.getElementById(
+                    "import_mode"
+                ).value;
+
+
+            if (mode === "replace") {
+
+                const confirmed =
+                    confirm(
+                        "Upload ulang semua data akan mengganti seluruh Master Skema Sertifikasi. Lanjutkan?"
+                    );
+
+
+                if (!confirmed) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+
+        }
+    );
+
+</script>
+
+{% endblock %}

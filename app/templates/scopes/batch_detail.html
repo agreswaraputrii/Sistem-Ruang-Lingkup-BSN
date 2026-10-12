@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .page-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .batch-head {
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 22px;
+    }
+
+    .metric-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+        height: 100%;
+    }
+
+    .metric-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+    .metric-number {
+        color: #0f172a;
+        font-size: 28px;
+        font-weight: 750;
+        margin-top: 4px;
+    }
+
+    .stepper {
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 18px;
+        background: #fff;
+    }
+
+    .step {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin: 5px 14px 5px 0;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .step.active {
+        color: #1d4ed8;
+    }
+
+    .step.done {
+        color: #15803d;
+    }
+
+    .step-number {
+        width: 27px;
+        height: 27px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+    }
+
+    .step.active .step-number {
+        background: #dbeafe;
+    }
+
+    .step.done .step-number {
+        background: #dcfce7;
+    }
+
+    .panel-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .panel-card .card-header {
+        background: #fff;
+        padding: 17px 20px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .status-badge {
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="page-shell">
+
+        <div class="batch-head">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+
+                <div>
+
+                    <div class="text-muted small fw-semibold mb-1">
+                        BATCH RUANG LINGKUP
+                    </div>
+
+                    <h2 class="mb-1">
+                        {{ batch.batch_code }}
+                    </h2>
+
+                    <div class="text-muted">
+                        {{ batch.file_name }}
+                    </div>
+
+                </div>
+
+
+                <div class="text-end">
+
+                    {% if batch.status == "READY_TO_COMMIT" %}
+                    <span class="status-badge bg-success-subtle text-success">
+                        READY TO COMMIT
+                    </span>
+
+                    {% elif batch.status == "NEED_REVIEW" %}
+                    <span class="status-badge bg-danger-subtle text-danger">
+                        NEED REVIEW
+                    </span>
+
+                    {% elif batch.status == "WAITING_CORRECTION_APPROVAL" %}
+                    <span class="status-badge bg-warning-subtle text-warning-emphasis">
+                        WAITING CORRECTION
+                    </span>
+
+                    {% elif batch.status == "COMMITTED" %}
+                    <span class="status-badge bg-primary-subtle text-primary">
+                        COMMITTED
+                    </span>
+
+                    {% else %}
+                    <span class="status-badge bg-secondary-subtle text-secondary">
+                        {{ batch.status }}
+                    </span>
+                    {% endif %}
+
+
+                    <div class="small text-muted mt-2">
+                        Mode:
+                        <strong>
+                            {{ batch.import_mode }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <hr>
+
+
+            <div class="row g-3 small">
+
+                <div class="col-md-4">
+                    <span class="text-muted">
+                        Diupload
+                    </span>
+                    <div class="fw-semibold">
+                        {{ batch.uploaded_at }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <span class="text-muted">
+                        Diproses
+                    </span>
+                    <div class="fw-semibold">
+                        {{ batch.processed_at or "-" }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <span class="text-muted">
+                        Catatan
+                    </span>
+                    <div class="fw-semibold">
+                        {{ batch.notes or "-" }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="stepper mb-4">
+
+            <span class="step done">
+                <span class="step-number">1</span>
+                Upload
+            </span>
+
+            <span class="step done">
+                <span class="step-number">2</span>
+                Validasi
+            </span>
+
+            <span class="step {% if batch.status in ['WAITING_CORRECTION_APPROVAL', 'NEED_REVIEW'] %}active{% elif batch.status in ['READY_TO_COMMIT', 'COMMITTED'] %}done{% endif %}">
+                <span class="step-number">3</span>
+                Review
+            </span>
+
+            <span class="step {% if batch.status == 'READY_TO_COMMIT' %}active{% elif batch.status == 'COMMITTED' %}done{% endif %}">
+                <span class="step-number">4</span>
+                Preview
+            </span>
+
+            <span class="step {% if batch.status == 'COMMITTED' %}done{% endif %}">
+                <span class="step-number">5</span>
+                Commit
+            </span>
+
+        </div>
+
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Total
+                        </div>
+                        <div class="metric-number">
+                            {{ batch.total_rows }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Valid
+                        </div>
+                        <div class="metric-number text-success">
+                            {{ batch.valid_count }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Corrected
+                        </div>
+                        <div class="metric-number text-warning">
+                            {{ batch.corrected_count }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Need Review
+                        </div>
+                        <div class="metric-number text-danger">
+                            {{ batch.review_count }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Auto-Correct
+                        </div>
+                        <div class="metric-number">
+                            {{ pending_corrections }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="metric-label">
+                            Blocking
+                        </div>
+                        <div class="metric-number">
+                            {{ blocking_issues }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <div class="col-xl-6">
+
+                <div class="card panel-card">
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <div class="fw-bold">
+                                Auto-Correction
+                            </div>
+                            <div class="small text-muted">
+                                Perubahan yang ditemukan oleh smart matching.
+                            </div>
+                        </div>
+
+                        <span class="badge text-bg-warning">
+                            {{ pending_corrections }} pending
+                        </span>
+
+                    </div>
+
+
+                    <div class="card-body p-0">
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle mb-0">
+
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Row</th>
+                                        <th>Field</th>
+                                        <th>Correction</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for item in recent_corrections %}
+
+                                    <tr>
+                                        <td>
+                                            {{ item.row_no }}
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ item.field_name }}
+                                            </span>
+                                        </td>
+
+                                        <td style="min-width: 260px;">
+                                            <div class="small text-muted">
+                                                {{ item.original_value or "-" }}
+                                            </div>
+                                            <div class="fw-semibold text-success">
+                                                → {{ item.corrected_value or "-" }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ item.correction_type }}
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            {% if item.confidence is not none %}
+                                                {{ "%.0f"|format(item.confidence) }}%
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    {% else %}
+
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            Tidak ada auto-correction.
+                                        </td>
+                                    </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-xl-6">
+
+                <div class="card panel-card">
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <div class="fw-bold">
+                                Review Queue
+                            </div>
+                            <div class="small text-muted">
+                                Data yang masih membutuhkan keputusan admin.
+                            </div>
+                        </div>
+
+                        <span class="badge text-bg-danger">
+                            {{ blocking_issues }} blocking
+                        </span>
+
+                    </div>
+
+
+                    <div class="card-body p-0">
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle mb-0">
+
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Row</th>
+                                        <th>Field</th>
+                                        <th>Reason</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for item in recent_issues %}
+
+                                    <tr>
+                                        <td>
+                                            {{ item.row_no }}
+                                        </td>
+
+                                        <td>
+                                            {{ item.field_name or "-" }}
+                                        </td>
+
+                                        <td style="min-width: 300px;">
+                                            {{ item.reason }}
+                                        </td>
+
+                                        <td>
+                                            {% if item.is_blocking %}
+                                            <span class="badge text-bg-danger">
+                                                Blocking
+                                            </span>
+                                            {% else %}
+                                            <span class="badge text-bg-secondary">
+                                                Review
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    {% else %}
+
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            Tidak ada issue yang menunggu review.
+                                        </td>
+                                    </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+
+            <a
+                href="/scopes/history"
+                class="btn btn-outline-secondary"
+            >
+                Kembali ke Riwayat
+            </a>
+
+            <a
+                href="/scopes/review?batch_id={{ batch.batch_id }}"
+                class="btn btn-primary"
+            >
+                Buka Review Batch
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

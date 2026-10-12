@@ -1,0 +1,855 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                Review Data Ruang Lingkup
+            </h3>
+
+            <p class="text-muted mb-0">
+                Periksa hasil matching dan validasi sebelum data masuk ke Ruang Lingkup final.
+            </p>
+
+        </div>
+
+
+        <div class="d-flex flex-wrap gap-2">
+
+            <form
+                method="post"
+                action="/scopes/revalidate"
+                onsubmit="return confirm('Cocokkan ulang seluruh data staging dengan master terbaru? Status review akan kembali menjadi PENDING.');"
+            >
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    Revalidasi Semua
+                </button>
+
+            </form>
+
+
+            <a
+                href="/scopes/import"
+                class="btn btn-primary"
+            >
+                Import Ruang Lingkup
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% if result == "success" %}
+
+    <div class="alert alert-success alert-dismissible fade show">
+
+        <strong>Berhasil.</strong>
+        {{ message }}
+
+        {% if revalidation_result %}
+        <div class="mt-2 small">
+            Diperbarui: <strong>{{ revalidation_result.updated_count }}</strong> |
+            VALID: <strong>{{ revalidation_result.valid_count }}</strong> |
+            WARNING: <strong>{{ revalidation_result.warning_count }}</strong> |
+            ERROR: <strong>{{ revalidation_result.error_count }}</strong>
+        </div>
+        {% endif %}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    {% if result == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>Gagal.</strong>
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ==================================================== -->
+    <!-- SUMMARY -->
+    <!-- ==================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Total Staging
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        {{ summary.total }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md">
+            <div class="card shadow-sm h-100 border-success">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Valid
+                    </div>
+
+                    <div class="fs-4 fw-bold text-success">
+                        {{ summary.valid_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md">
+            <div class="card shadow-sm h-100 border-warning">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Warning
+                    </div>
+
+                    <div class="fs-4 fw-bold text-warning">
+                        {{ summary.warning_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md">
+            <div class="card shadow-sm h-100 border-danger">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Error
+                    </div>
+
+                    <div class="fs-4 fw-bold text-danger">
+                        {{ summary.error_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Menunggu Review
+                    </div>
+
+                    <div class="fs-4 fw-bold text-primary">
+                        {{ summary.pending_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <!-- ==================================================== -->
+    <!-- REVIEW ACTIONS -->
+    <!-- ==================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                <form
+                    method="post"
+                    action="/scopes/review/approve-all"
+                    onsubmit="return confirm('Approve seluruh baris VALID dan WARNING yang masih PENDING?');"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Approve Semua VALID/WARNING
+                    </button>
+                </form>
+
+
+                <form
+                    method="post"
+                    action="/scopes/review/reject-errors"
+                    onsubmit="return confirm('Tandai seluruh baris ERROR yang masih PENDING sebagai REJECTED?');"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-outline-danger"
+                    >
+                        Reject Semua ERROR
+                    </button>
+                </form>
+
+
+                <form
+                    method="post"
+                    action="/scopes/commit"
+                    onsubmit="return confirm('Commit seluruh data APPROVED ke Ruang Lingkup final? Pastikan tidak ada baris PENDING.');"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        {% if summary.pending_count > 0 %}
+                        disabled
+                        {% endif %}
+                    >
+                        Commit Data Approved
+                    </button>
+                </form>
+
+
+                <span class="text-muted small ms-2">
+                    APPROVED:
+                    <strong>
+                        {{ summary.approved_count }}
+                    </strong>
+                    |
+                    REJECTED:
+                    <strong>
+                        {{ summary.rejected_count }}
+                    </strong>
+                </span>
+
+            </div>
+
+
+            {% if summary.pending_count > 0 %}
+
+            <div class="small text-muted mt-2">
+                Commit akan aktif setelah semua baris selesai direview.
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- FILTER -->
+    <!-- ==================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form
+                method="get"
+                action="/scopes/review"
+            >
+
+                <div class="row g-2">
+
+                    <div class="col-md-4">
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="search"
+                            value="{{ search }}"
+                            placeholder="Cari LPK, produk, standar, pesan validasi..."
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <select
+                            name="validation_status"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Semua Status Validasi
+                            </option>
+
+                            <option
+                                value="VALID"
+                                {% if validation_status == "VALID" %}selected{% endif %}
+                            >
+                                VALID
+                            </option>
+
+                            <option
+                                value="WARNING"
+                                {% if validation_status == "WARNING" %}selected{% endif %}
+                            >
+                                WARNING
+                            </option>
+
+                            <option
+                                value="ERROR"
+                                {% if validation_status == "ERROR" %}selected{% endif %}
+                            >
+                                ERROR
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <select
+                            name="review_status"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Semua Status Review
+                            </option>
+
+                            <option
+                                value="PENDING"
+                                {% if review_status == "PENDING" %}selected{% endif %}
+                            >
+                                PENDING
+                            </option>
+
+                            <option
+                                value="APPROVED"
+                                {% if review_status == "APPROVED" %}selected{% endif %}
+                            >
+                                APPROVED
+                            </option>
+
+                            <option
+                                value="REJECTED"
+                                {% if review_status == "REJECTED" %}selected{% endif %}
+                            >
+                                REJECTED
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-2">
+
+                        <div class="d-flex gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Filter
+                            </button>
+
+
+                            <a
+                                href="/scopes/review"
+                                class="btn btn-outline-secondary"
+                            >
+                                Reset
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- TABLE -->
+    <!-- ==================================================== -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Data Staging
+            </strong>
+
+            <span class="text-muted ms-2">
+                {{ items|length }} baris ditampilkan
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table
+                class="table table-hover align-middle mb-0"
+                style="min-width: 1700px;"
+            >
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>
+                            Baris
+                        </th>
+
+                        <th>
+                            No. LPK
+                        </th>
+
+                        <th>
+                            No. Urut
+                        </th>
+
+                        <th>
+                            Produk
+                        </th>
+
+                        <th>
+                            Standar
+                        </th>
+
+                        <th>
+                            Skema Sertifikasi
+                        </th>
+
+                        <th>
+                            Hasil Matching
+                        </th>
+
+                        <th>
+                            Validasi
+                        </th>
+
+                        <th>
+                            Review
+                        </th>
+
+                        <th>
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for item in items %}
+
+                    <tr>
+
+                        <!-- ================================= -->
+                        <!-- SOURCE ROW -->
+                        <!-- ================================= -->
+
+                        <td class="text-nowrap">
+
+                            {{ item.source_row }}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- LPK -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 220px;">
+
+                            <div class="fw-semibold">
+                                {{ item.raw_no_lpk or "-" }}
+                            </div>
+
+                            {% if item.matched_lpk %}
+
+                                <div class="small text-success">
+                                    → {{ item.matched_lpk }}
+                                </div>
+
+                                <div class="small text-muted">
+                                    {{ item.matched_institution_name or "" }}
+                                </div>
+
+                            {% else %}
+
+                                <div class="small text-danger">
+                                    Tidak cocok
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- PRODUCT ORDER -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 130px;">
+
+                            <div>
+                                Raw:
+                                {{ item.raw_product_order_no or "-" }}
+                            </div>
+
+                            {% if item.resolved_product_order_no %}
+
+                                <div class="small text-muted">
+                                    Dipakai:
+                                    {{ item.resolved_product_order_no }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- PRODUCT -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 330px;">
+
+                            <div>
+                                <strong>
+                                    Skema:
+                                </strong>
+                                {{ item.raw_scheme or "-" }}
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Kategori:
+                                </strong>
+                                {{ item.raw_category or "-" }}
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Sub:
+                                </strong>
+                                {{ item.raw_subcategory or "-" }}
+                            </div>
+
+                            <div>
+                                <strong>
+                                    Jenis:
+                                </strong>
+                                {{ item.raw_product_service or "-" }}
+                            </div>
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- STANDARD -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 330px;">
+
+                            <div class="fw-semibold">
+                                {{ item.raw_standard_number or "-" }}
+                            </div>
+
+                            <div class="small text-muted">
+                                {{ item.raw_standard_title or "-" }}
+                            </div>
+
+                            {% if item.matched_standard_code %}
+
+                                <div class="small text-success mt-1">
+                                    → {{ item.matched_standard_code }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- CERTIFICATION SCHEME -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 300px;">
+
+                            <div>
+                                {{ item.raw_certification_scheme or "-" }}
+                            </div>
+
+                            {% if item.matched_certification_scheme_code %}
+
+                                <div class="small text-success">
+                                    →
+                                    {{ item.matched_certification_scheme_code }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- MATCH RESULT -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 300px;">
+
+                            {% if item.product_path_id %}
+
+                                <div class="small text-success fw-semibold mb-1">
+                                    Product Path #{{ item.product_path_id }}
+                                </div>
+
+                                <div class="small">
+                                    {{ item.matched_scheme or "-" }}
+                                </div>
+
+                                <div class="small">
+                                    Kategori:
+                                    {{ item.matched_category or item.category_status or "-" }}
+                                </div>
+
+                                <div class="small">
+                                    Sub:
+                                    {{ item.matched_subcategory or item.subcategory_status or "-" }}
+                                </div>
+
+                                <div class="small">
+                                    Jenis:
+                                    {{ item.matched_product_service or item.product_service_status or "-" }}
+                                </div>
+
+                            {% else %}
+
+                                <span class="text-danger small">
+                                    Product path tidak ditemukan
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- VALIDATION -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 380px;">
+
+                            {% if item.validation_status == "VALID" %}
+
+                                <span class="badge bg-success">
+                                    VALID
+                                </span>
+
+                            {% elif item.validation_status == "WARNING" %}
+
+                                <span class="badge bg-warning text-dark">
+                                    WARNING
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    ERROR
+                                </span>
+
+                            {% endif %}
+
+
+                            <div class="small mt-2">
+
+                                {{ item.validation_message }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- REVIEW -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 150px;">
+
+                            {% if item.review_status == "APPROVED" %}
+
+                                <span class="badge bg-success">
+                                    APPROVED
+                                </span>
+
+                            {% elif item.review_status == "REJECTED" %}
+
+                                <span class="badge bg-danger">
+                                    REJECTED
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-secondary">
+                                    PENDING
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if item.review_note %}
+
+                                <div class="small mt-2">
+                                    {{ item.review_note }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- ACTION -->
+                        <!-- ================================= -->
+
+                        <td style="min-width: 230px;">
+
+                            {% if item.review_status == "PENDING" %}
+
+                                {% if item.validation_status != "ERROR" %}
+
+                                <form
+                                    method="post"
+                                    action="/scopes/review/{{ item.staging_id }}/approve"
+                                    class="mb-2"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-success w-100"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+
+                                {% endif %}
+
+
+                                <form
+                                    method="post"
+                                    action="/scopes/review/{{ item.staging_id }}/reject"
+                                >
+                                    <input
+                                        type="text"
+                                        name="review_note"
+                                        class="form-control form-control-sm mb-2"
+                                        placeholder="Catatan reject (opsional)"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger w-100"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+
+                            {% else %}
+
+                                <form
+                                    method="post"
+                                    action="/scopes/review/{{ item.staging_id }}/pending"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-secondary w-100"
+                                    >
+                                        Kembalikan ke Pending
+                                    </button>
+                                </form>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="10"
+                            class="text-center text-muted py-5"
+                        >
+
+                            Belum ada data di staging.
+
+                            <br><br>
+
+                            <a
+                                href="/scopes/import"
+                                class="btn btn-primary"
+                            >
+                                Import Ruang Lingkup
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

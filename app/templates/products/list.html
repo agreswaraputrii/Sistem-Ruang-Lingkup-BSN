@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div
+    class="d-flex flex-wrap
+           justify-content-between
+           align-items-start
+           gap-3 mb-4"
+>
+
+    <div>
+
+        <h3 class="mb-1">
+            Master Produk
+        </h3>
+
+        <p class="text-muted mb-0">
+
+            Master hubungan Skema,
+            Kategori, Sub Kategori,
+            dan Jenis Produk/Proses/Jasa.
+
+        </p>
+
+    </div>
+
+
+    <div class="d-flex flex-wrap gap-2">
+
+
+        <a
+            href="/products/create"
+            class="btn btn-success"
+        >
+            Tambah Data
+        </a>
+
+
+        <a
+            href="/products/import"
+            class="btn btn-primary"
+        >
+            Import Data
+        </a>
+
+
+        <a
+            href="/products/template"
+            class="btn btn-outline-primary"
+        >
+            Download Template
+        </a>
+
+
+        <a
+            href="/products/export/xlsx"
+            class="btn btn-outline-success"
+        >
+            Export Excel
+        </a>
+
+
+        <a
+            href="/products/export/csv"
+            class="btn btn-outline-secondary"
+        >
+            Export CSV
+        </a>
+
+
+    </div>
+
+
+</div>
+
+
+{% if result == "success" %}
+
+<div
+    class="alert alert-success
+           alert-dismissible fade show"
+>
+
+    <strong>
+        Berhasil.
+    </strong>
+
+    {{ message }}
+
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+    >
+    </button>
+
+</div>
+
+{% endif %}
+
+
+{% if result == "failed" %}
+
+<div
+    class="alert alert-danger
+           alert-dismissible fade show"
+>
+
+    <strong>
+        Gagal.
+    </strong>
+
+    {{ message }}
+
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+    >
+    </button>
+
+</div>
+
+{% endif %}
+
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body">
+
+        <form
+            method="get"
+            action="/products"
+        >
+
+            <div class="row g-2">
+
+                <div class="col-md-9">
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        value="{{ search }}"
+                        placeholder="Cari ID/skema, kategori, sub kategori, atau jenis..."
+                    >
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="d-flex gap-2">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Cari
+                        </button>
+
+
+                        <a
+                            href="/products"
+                            class="btn btn-outline-secondary"
+                        >
+                            Reset
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm">
+
+
+    <div
+        class="card-header
+               bg-white
+               py-3
+               d-flex
+               justify-content-between
+               align-items-center"
+    >
+
+        <strong>
+            Total Jalur:
+            {{ total_paths }}
+        </strong>
+
+        <small class="text-muted">
+            Master Produk
+        </small>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+
+        <table
+            class="table
+                   table-hover
+                   align-middle
+                   mb-0"
+            style="min-width: 1750px;"
+        >
+
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>Skema</th>
+                    <th>ID Skema</th>
+
+                    <th>Kategori</th>
+                    <th>ID Kategori</th>
+
+                    <th>Sub Kategori</th>
+                    <th>ID Sub Kategori</th>
+
+                    <th>Jenis</th>
+                    <th>ID Jenis</th>
+
+                    <th style="min-width: 160px;">
+                        Aksi
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+            {% for item in products %}
+
+
+                <tr>
+
+
+                    <td>
+
+                        <strong>
+                            {{ item.scheme_name }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+                        {{ item.scheme_code }}
+                    </td>
+
+
+                    <td>
+
+                        {% if item.category_status == "VALUE" %}
+
+                            {{ item.category_name }}
+
+                        {% elif item.category_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="badge bg-warning text-dark">
+                                Kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.category_status == "VALUE" %}
+
+                            {{ item.category_code }}
+
+                        {% elif item.category_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.subcategory_status == "VALUE" %}
+
+                            {{ item.subcategory_name }}
+
+                        {% elif item.subcategory_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="badge bg-warning text-dark">
+                                Kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.subcategory_status == "VALUE" %}
+
+                            {{ item.subcategory_code }}
+
+                        {% elif item.subcategory_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.product_service_status == "VALUE" %}
+
+                            {{ item.product_service_name }}
+
+                        {% elif item.product_service_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="badge bg-warning text-dark">
+                                Kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.product_service_status == "VALUE" %}
+
+                            {{ item.product_service_code }}
+
+                        {% elif item.product_service_status == "NOT_APPLICABLE" %}
+
+                            -
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                kosong
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="d-flex gap-2">
+
+
+                            <a
+                                href="/products/{{ item.path_id }}/edit"
+                                class="btn btn-sm btn-outline-warning"
+                            >
+                                Edit
+                            </a>
+
+
+                            <form
+                                method="post"
+                                action="/products/{{ item.path_id }}/delete"
+                                onsubmit="
+                                    return confirm(
+                                        'Yakin ingin menghapus data Master Produk ini?'
+                                    );
+                                "
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                >
+                                    Hapus
+                                </button>
+
+                            </form>
+
+
+                        </div>
+
+                    </td>
+
+
+                </tr>
+
+
+            {% else %}
+
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="text-center text-muted py-5"
+                    >
+
+                        Belum ada data Master Produk.
+
+                        <br><br>
+
+                        <a
+                            href="/products/create"
+                            class="btn btn-success"
+                        >
+                            Tambah Data
+                        </a>
+
+                    </td>
+
+                </tr>
+
+
+            {% endfor %}
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

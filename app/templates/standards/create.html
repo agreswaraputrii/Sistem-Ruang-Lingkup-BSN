@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                Tambah Standar
+            </h3>
+
+            <p class="text-muted mb-0">
+                Tambahkan data baru ke Master Standar.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/standards"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+    </div>
+
+
+    {% if status == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>
+            Gagal.
+        </strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Form Master Standar
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form
+                method="post"
+                action="/standards/create"
+            >
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-semibold">
+                            ID Standar
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ next_code }}"
+                            readonly
+                        >
+
+                        <div class="form-text">
+                            ID dibuat otomatis berdasarkan ID terbesar.
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-9">
+
+                        <label class="form-label fw-semibold">
+                            Nomor Acuan Standar
+                        </label>
+
+                        <input
+                            type="text"
+                            name="standard_number"
+                            class="form-control"
+                            placeholder="Contoh: SNI 3553:2015"
+                            required
+                            autofocus
+                        >
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label fw-semibold">
+                            Judul Acuan Standar
+                        </label>
+
+                        <textarea
+                            name="standard_title"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Masukkan Judul Acuan Standar"
+                            required
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert alert-info mt-4 mb-0">
+
+                    <strong>
+                        Informasi:
+                    </strong>
+
+                    ID Standar dibuat otomatis
+                    dengan format
+
+                    <strong>
+                        STD-XXXX
+                    </strong>.
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Simpan Data
+                    </button>
+
+
+                    <a
+                        href="/standards"
+                        class="btn btn-outline-secondary"
+                    >
+                        Batal
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

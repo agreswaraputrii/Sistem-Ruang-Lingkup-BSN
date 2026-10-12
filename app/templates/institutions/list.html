@@ -15,154 +15,111 @@
            gap-3 mb-4"
 >
 
+
     <div>
 
         <h3 class="mb-1">
             Master Lembaga
         </h3>
 
+
         <p class="text-muted mb-0">
-            Data lembaga sertifikasi
-            hasil sinkronisasi Google Sheets.
+
+            Kelola data lembaga sertifikasi.
+
         </p>
 
     </div>
 
 
-    <form
-        method="post"
-        action="/institutions/sync"
-        onsubmit="
-            return confirm(
-                'Sinkronkan Master Lembaga dari Google Sheets sekarang?'
-            );
-        "
-    >
+    <div class="d-flex flex-wrap gap-2">
 
-        <button
-            type="submit"
+
+        <a
+            href="/institutions/import"
             class="btn btn-primary"
-
-            {% if sync_lock.is_locked %}
-            disabled
-            {% endif %}
         >
+            Import Data
+        </a>
 
-            {% if sync_lock.is_locked %}
 
-                Sinkronisasi Sedang Berjalan...
+        <a
+            href="/institutions/template"
+            class="btn btn-outline-primary"
+        >
+            Download Template
+        </a>
 
-            {% else %}
 
-                ↻ Sinkronkan dari Google Sheets
+        <a
+            href="/institutions/export/xlsx"
+            class="btn btn-outline-success"
+        >
+            Export Excel
+        </a>
 
-            {% endif %}
 
-        </button>
+        <a
+            href="/institutions/export/csv"
+            class="btn btn-outline-secondary"
+        >
+            Export CSV
+        </a>
 
-    </form>
+
+    </div>
+
 
 </div>
 
 
-
 <!-- ======================================================== -->
-<!-- CURRENT SYNC LOCK -->
+<!-- SUCCESS MESSAGE -->
 <!-- ======================================================== -->
 
-{% if sync_lock.is_locked %}
+{% if result == "success" %}
 
-<div class="alert alert-warning">
+<div
+    class="alert alert-success
+           alert-dismissible fade show"
+    role="alert"
+>
 
     <strong>
-        Sinkronisasi sedang berlangsung.
+        Berhasil.
     </strong>
 
-    <br>
+    {{ message }}
 
-    Pengguna lain sedang melakukan
-    sinkronisasi Master Lembaga.
 
-    {% if sync_lock.locked_at %}
-
-        <br>
-
-        Dimulai:
-        {{ sync_lock.locked_at }}
-
-    {% endif %}
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+    >
+    </button>
 
 </div>
 
 {% endif %}
 
 
-
 <!-- ======================================================== -->
-<!-- SYNC RESULT -->
-<!-- ======================================================== -->
-
-{% if sync == "success" %}
-
-<div class="alert alert-success">
-
-    <strong>
-        ✓ Sinkronisasi berhasil
-    </strong>
-
-    <div class="mt-1">
-        {{ message }}
-    </div>
-
-</div>
-
-
-{% elif sync == "busy" %}
-
-<div class="alert alert-warning">
-
-    <strong>
-        Sinkronisasi belum dijalankan.
-    </strong>
-
-    <div class="mt-1">
-        {{ message }}
-    </div>
-
-</div>
-
-
-{% elif sync == "failed" %}
-
-<div class="alert alert-danger">
-
-    <strong>
-        Sinkronisasi gagal
-    </strong>
-
-    <div class="mt-1">
-        {{ message }}
-    </div>
-
-</div>
-
-{% endif %}
-
-
-
-<!-- ======================================================== -->
-<!-- SOURCE INFORMATION -->
+<!-- INFORMATION -->
 <!-- ======================================================== -->
 
 <div class="card shadow-sm mb-3">
 
+
     <div class="card-body py-3">
+
 
         <div
             class="d-flex flex-wrap
                    justify-content-between
                    gap-4"
         >
+
 
             <div>
 
@@ -171,7 +128,7 @@
                 </div>
 
                 <div class="fw-semibold">
-                    Google Sheets — Master Data
+                    Import Excel / CSV
                 </div>
 
             </div>
@@ -180,25 +137,11 @@
             <div>
 
                 <div class="text-muted small">
-                    Terakhir Sinkron
+                    Metode Pengelolaan
                 </div>
 
                 <div class="fw-semibold">
-
-                    {% if last_sync %}
-
-                        {{
-                            last_sync.finished_at
-                            or
-                            last_sync.started_at
-                        }}
-
-                    {% else %}
-
-                        Belum pernah sinkron
-
-                    {% endif %}
-
+                    Import langsung ke Master
                 </div>
 
             </div>
@@ -207,67 +150,36 @@
             <div>
 
                 <div class="text-muted small">
-                    Status Sinkron
+                    Auto-correct
                 </div>
 
-                <div>
-
-                    {% if sync_lock.is_locked %}
-
-                        <span
-                            class="badge
-                                   bg-warning
-                                   text-dark"
-                        >
-                            SYNCHRONIZING
-                        </span>
-
-
-                    {% elif last_sync %}
-
-                        {% if last_sync.sync_status == "SUCCESS" %}
-
-                            <span class="badge bg-success">
-                                SUCCESS
-                            </span>
-
-                        {% elif last_sync.sync_status == "FAILED" %}
-
-                            <span class="badge bg-danger">
-                                FAILED
-                            </span>
-
-                        {% else %}
-
-                            <span
-                                class="badge
-                                       bg-warning
-                                       text-dark"
-                            >
-                                {{ last_sync.sync_status }}
-                            </span>
-
-                        {% endif %}
-
-
-                    {% else %}
-
-                        <span class="badge bg-secondary">
-                            BELUM ADA
-                        </span>
-
-                    {% endif %}
-
-                </div>
+                <span class="badge bg-secondary">
+                    Tidak digunakan
+                </span>
 
             </div>
 
+
+            <div>
+
+                <div class="text-muted small">
+                    Staging
+                </div>
+
+                <span class="badge bg-secondary">
+                    Tidak digunakan
+                </span>
+
+            </div>
+
+
         </div>
+
 
     </div>
 
-</div>
 
+</div>
 
 
 <!-- ======================================================== -->
@@ -276,17 +188,21 @@
 
 <div class="card shadow-sm mb-3">
 
+
     <div class="card-body">
+
 
         <form
             method="get"
             action="/institutions"
         >
 
+
             <div class="row g-2">
 
 
                 <div class="col-md-6">
+
 
                     <input
                         type="text"
@@ -296,15 +212,18 @@
                         placeholder="Cari ID, nama, kota, provinsi, atau CP..."
                     >
 
+
                 </div>
 
 
                 <div class="col-md-3">
 
+
                     <select
                         name="status"
                         class="form-select"
                     >
+
 
                         <option value="">
                             Semua Status
@@ -332,14 +251,18 @@
                             Withdrawn
                         </option>
 
+
                     </select>
+
 
                 </div>
 
 
                 <div class="col-md-3">
 
+
                     <div class="d-flex gap-2">
+
 
                         <button
                             type="submit"
@@ -356,18 +279,23 @@
                             Reset
                         </a>
 
+
                     </div>
+
 
                 </div>
 
+
             </div>
+
 
         </form>
 
+
     </div>
 
-</div>
 
+</div>
 
 
 <!-- ======================================================== -->
@@ -376,59 +304,64 @@
 
 <div class="card shadow-sm">
 
-    <div class="card-header bg-white py-3">
+
+    <div
+        class="card-header
+               bg-white
+               py-3
+               d-flex
+               justify-content-between
+               align-items-center"
+    >
+
 
         <strong>
+
             Total Data:
             {{ institutions|length }}
+
         </strong>
+
+
+        <small class="text-muted">
+
+            Data Master Lembaga Aktif
+
+        </small>
+
 
     </div>
 
 
     <div class="table-responsive">
 
+
         <table
             class="table table-hover
                    align-middle mb-0"
-            style="min-width: 1250px;"
+            style="min-width: 1300px;"
         >
+
 
             <thead class="table-light">
 
                 <tr>
 
-                    <th>
-                        ID LSPro
-                    </th>
+                    <th>ID LSPro</th>
 
-                    <th>
-                        Nama
-                    </th>
+                    <th>Nama</th>
 
-                    <th>
-                        Status
-                    </th>
+                    <th>Status</th>
 
-                    <th>
-                        Mulai Akreditasi
-                    </th>
+                    <th>Mulai Akreditasi</th>
 
-                    <th>
-                        Akhir Akreditasi
-                    </th>
+                    <th>Akhir Akreditasi</th>
 
-                    <th>
-                        Kab/Kota
-                    </th>
+                    <th>Kab/Kota</th>
 
-                    <th>
-                        Provinsi
-                    </th>
+                    <th>Provinsi</th>
 
-                    <th>
-                        CP
-                    </th>
+                    <th>CP</th>
 
                     <th class="text-center">
                         Amandemen
@@ -445,7 +378,9 @@
 
             <tbody>
 
+
             {% for item in institutions %}
+
 
                 <tr>
 
@@ -453,20 +388,26 @@
                     <td>
 
                         <strong>
+
                             {{ item.id_lspro }}
+
                         </strong>
 
                     </td>
 
 
                     <td>
+
                         {{ item.name_lspro or "-" }}
+
                     </td>
 
 
                     <td>
 
+
                         {% if item.status_accreditation == "Active" %}
+
 
                             <span class="badge bg-success">
                                 Active
@@ -475,6 +416,7 @@
 
                         {% elif item.status_accreditation == "Withdrawn" %}
 
+
                             <span class="badge bg-secondary">
                                 Withdrawn
                             </span>
@@ -482,19 +424,24 @@
 
                         {% else %}
 
+
                             <span
                                 class="badge
                                        bg-light
                                        text-dark
                                        border"
                             >
+
                                 {{
                                     item.status_accreditation
                                     or "-"
                                 }}
+
                             </span>
 
+
                         {% endif %}
+
 
                     </td>
 
@@ -520,60 +467,89 @@
 
 
                     <td>
+
                         {{ item.kab_kota or "-" }}
+
                     </td>
 
 
                     <td>
+
                         {{ item.propinsi or "-" }}
+
                     </td>
 
 
                     <td>
+
                         {{ item.cp or "-" }}
+
                     </td>
 
-
-                    <!-- ===================================== -->
-                    <!-- JUMLAH AMANDEMEN -->
-                    <!-- ===================================== -->
 
                     <td class="text-center">
 
+
                         {% if item.amendment_count > 0 %}
 
+
                             <span class="badge bg-primary">
+
                                 {{ item.amendment_count }}
+
                             </span>
 
+
                         {% else %}
+
 
                             <span class="text-muted">
                                 0
                             </span>
 
+
                         {% endif %}
+
 
                     </td>
 
 
                     <td>
 
-                        <a
-                            href="/institutions/{{ item.institution_id }}"
-                            class="btn btn-sm btn-outline-primary"
-                        >
-                            Detail
-                        </a>
+
+                        <div class="d-flex gap-1">
+
+
+                            <a
+                                href="/institutions/{{ item.institution_id }}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                Detail
+                            </a>
+
+
+                            <a
+                                href="/institutions/{{ item.institution_id }}/edit"
+                                class="btn btn-sm btn-outline-warning"
+                            >
+                                Edit
+                            </a>
+
+
+                        </div>
+
 
                     </td>
+
 
                 </tr>
 
 
             {% else %}
 
+
                 <tr>
+
 
                     <td
                         colspan="10"
@@ -582,29 +558,40 @@
                                py-5"
                     >
 
+
                         Belum ada data Master Lembaga.
+
 
                         <br><br>
 
-                        Klik
 
-                        <strong>
-                            Sinkronkan dari Google Sheets
-                        </strong>
+                        <a
+                            href="/institutions/import"
+                            class="btn btn-primary"
+                        >
 
-                        untuk mengambil data.
+                            Import Data Master Lembaga
+
+                        </a>
+
 
                     </td>
 
+
                 </tr>
+
 
             {% endfor %}
 
+
             </tbody>
+
 
         </table>
 
+
     </div>
+
 
 </div>
 

@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .page-shell {
+        max-width: 1380px;
+        margin: 0 auto;
+    }
+
+    .page-heading {
+        margin-bottom: 24px;
+    }
+
+    .eyebrow {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .page-title {
+        font-size: 30px;
+        font-weight: 750;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        margin: 8px 0 0;
+        max-width: 760px;
+    }
+
+    .upload-card,
+    .recent-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, .05);
+        overflow: hidden;
+    }
+
+    .upload-card .card-header,
+    .recent-card .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #eef2f7;
+        padding: 20px 24px;
+    }
+
+    .upload-card .card-body {
+        padding: 24px;
+    }
+
+    .mode-card {
+        border: 1px solid #dbe3ee;
+        border-radius: 14px;
+        padding: 18px;
+        height: 100%;
+        cursor: pointer;
+        transition: .15s ease;
+        background: #fff;
+    }
+
+    .mode-card:hover {
+        border-color: #93c5fd;
+        box-shadow: 0 6px 18px rgba(37, 99, 235, .08);
+    }
+
+    .mode-card input {
+        margin-right: 8px;
+    }
+
+    .mode-title {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .mode-desc {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .flow-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 18px;
+    }
+
+    .flow-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+        margin: 4px 8px 4px 0;
+    }
+
+    .flow-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #e0f2fe;
+        color: #0369a1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    .status-ready {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-review {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-waiting {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-committed {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="page-shell">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+
+            <div>
+
+                <div class="eyebrow">
+                    Ruang Lingkup
+                </div>
+
+                <h1 class="page-title">
+                    Upload Data
+                </h1>
+
+                <p class="page-subtitle">
+                    Setiap upload dibuat sebagai batch terpisah. Data akan melalui validasi,
+                    smart matching, auto-correction, dan review sebelum dapat di-commit.
+                </p>
+
+            </div>
+
+
+            <a
+                href="/scopes/history"
+                class="btn btn-outline-secondary"
+            >
+                Riwayat Upload
+            </a>
+
+        </div>
+
+
+        {% if status == "failed" %}
+
+        <div class="alert alert-danger border-0 shadow-sm">
+            <strong>Upload gagal.</strong>
+            {{ message }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="row g-4">
+
+            <div class="col-xl-8">
+
+                <div class="card upload-card">
+
+                    <div class="card-header">
+
+                        <div class="fw-bold fs-5">
+                            Upload File Ruang Lingkup
+                        </div>
+
+                        <div class="text-muted small mt-1">
+                            XLSX, XLS, atau CSV sesuai template Ruang Lingkup.
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <form
+                            method="post"
+                            action="/scopes/import"
+                            enctype="multipart/form-data"
+                            id="scopeUploadForm"
+                        >
+
+                            <div class="mb-4">
+
+                                <label class="form-label fw-semibold">
+                                    File
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="file"
+                                    class="form-control form-control-lg"
+                                    accept=".xlsx,.xls,.csv"
+                                    required
+                                >
+
+                                <div class="form-text mt-2">
+                                    File asli tidak langsung mengubah database aktif.
+                                </div>
+
+                            </div>
+
+
+                            <div class="mb-4">
+
+                                <label class="form-label fw-semibold mb-3">
+                                    Pilih Mode Import
+                                </label>
+
+
+                                <div class="row g-3">
+
+                                    <div class="col-md-6">
+
+                                        <label class="mode-card d-block">
+
+                                            <div>
+                                                <input
+                                                    type="radio"
+                                                    name="import_mode"
+                                                    value="APPEND"
+                                                >
+
+                                                <span class="mode-title">
+                                                    Tambah Data
+                                                </span>
+                                            </div>
+
+                                            <div class="mode-desc">
+                                                Menambahkan ruang lingkup baru tanpa mengganti seluruh
+                                                dataset aktif. Duplicate akan diperiksa saat preview/commit.
+                                            </div>
+
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <label class="mode-card d-block">
+
+                                            <div>
+                                                <input
+                                                    type="radio"
+                                                    name="import_mode"
+                                                    value="REPLACE"
+                                                    checked
+                                                >
+
+                                                <span class="mode-title">
+                                                    Upload Ulang Seluruh Data
+                                                </span>
+                                            </div>
+
+                                            <div class="mode-desc">
+                                                Batch akan diproses sebagai calon versi aktif terbaru.
+                                                Versi sebelumnya tetap disimpan di History.
+                                            </div>
+
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="flow-box mb-4">
+
+                                <div class="fw-semibold mb-2">
+                                    Alur setelah upload
+                                </div>
+
+                                <div>
+
+                                    <span class="flow-step">
+                                        <span class="flow-dot">1</span>
+                                        Validasi
+                                    </span>
+
+                                    <span class="flow-step">
+                                        <span class="flow-dot">2</span>
+                                        Auto-Correction
+                                    </span>
+
+                                    <span class="flow-step">
+                                        <span class="flow-dot">3</span>
+                                        Review
+                                    </span>
+
+                                    <span class="flow-step">
+                                        <span class="flow-dot">4</span>
+                                        Preview
+                                    </span>
+
+                                    <span class="flow-step">
+                                        <span class="flow-dot">5</span>
+                                        Commit
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-lg px-4"
+                            >
+                                Upload & Proses
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-xl-4">
+
+                <div class="card recent-card">
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                        <div class="fw-bold">
+                            Upload Terbaru
+                        </div>
+
+                        <a
+                            href="/scopes/history"
+                            class="small text-decoration-none"
+                        >
+                            Lihat semua
+                        </a>
+
+                    </div>
+
+
+                    <div class="list-group list-group-flush">
+
+                        {% for batch in recent_batches %}
+
+                        <a
+                            href="/scopes/batches/{{ batch.batch_id }}"
+                            class="list-group-item list-group-item-action px-4 py-3"
+                        >
+
+                            <div class="d-flex justify-content-between gap-2">
+
+                                <div class="fw-semibold text-dark">
+                                    {{ batch.batch_code }}
+                                </div>
+
+
+                                {% if batch.status == "READY_TO_COMMIT" %}
+                                <span class="status-pill status-ready">
+                                    Ready
+                                </span>
+
+                                {% elif batch.status == "NEED_REVIEW" %}
+                                <span class="status-pill status-review">
+                                    Need Review
+                                </span>
+
+                                {% elif batch.status == "WAITING_CORRECTION_APPROVAL" %}
+                                <span class="status-pill status-waiting">
+                                    Correction
+                                </span>
+
+                                {% elif batch.status == "COMMITTED" %}
+                                <span class="status-pill status-committed">
+                                    Committed
+                                </span>
+
+                                {% else %}
+                                <span class="status-pill">
+                                    {{ batch.status }}
+                                </span>
+                                {% endif %}
+
+                            </div>
+
+                            <div class="small text-muted mt-1 text-truncate">
+                                {{ batch.file_name }}
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                {{ batch.total_rows }} baris · {{ batch.import_mode }}
+                            </div>
+
+                        </a>
+
+                        {% else %}
+
+                        <div class="px-4 py-5 text-center text-muted">
+                            Belum ada batch upload.
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document
+    .getElementById("scopeUploadForm")
+    .addEventListener(
+        "submit",
+        function () {
+            const button =
+                this.querySelector(
+                    "button[type='submit']"
+                );
+
+            button.disabled = true;
+            button.innerText =
+                "Memproses...";
+        }
+    );
+</script>
+
+{% endblock %}

@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+
+        <div>
+
+            <h4 class="mb-1">
+                Review Data
+            </h4>
+
+            <p class="text-muted small mb-0">
+                Batch {{ batch.batch_code }}
+                —
+                hanya data yang membutuhkan keputusan manual.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/scopes/history"
+            class="btn btn-sm btn-outline-secondary"
+        >
+            Kembali ke Riwayat
+        </a>
+
+    </div>
+
+
+    <!-- FLOW MENU -->
+    <div class="card mb-3">
+
+        <div class="card-body py-3">
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <a
+                    href="/scopes/batches/{{ batch.batch_id }}/corrections"
+                    class="btn btn-outline-primary"
+                >
+                    Auto-Correction
+                </a>
+
+                <a
+                    href="/scopes/batches/{{ batch.batch_id }}/corrections?status_filter=APPROVED"
+                    class="btn btn-outline-success"
+                >
+                    Approved
+                </a>
+
+                <a
+                    href="/scopes/batches/{{ batch.batch_id }}/corrections?status_filter=REJECTED"
+                    class="btn btn-outline-secondary"
+                >
+                    Reject / Nilai Asli
+                </a>
+
+                <a
+                    href="/scopes/batches/{{ batch.batch_id }}/review"
+                    class="btn btn-warning"
+                >
+                    Review Data
+                </a>
+
+                <a
+                    href="/scopes/batches/{{ batch.batch_id }}/preview"
+                    class="btn btn-outline-dark"
+                >
+                    Preview & Commit
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {% if result == "success" %}
+
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    {% if result == "failed" %}
+
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- SUMMARY -->
+    <div class="row g-2 mb-3">
+
+        <div class="col-md-6">
+
+            <div class="card p-3 border-danger">
+
+                <small class="text-muted">
+                    Blocking Issue
+                </small>
+
+                <strong class="text-danger fs-5">
+                    {{ blocking_count }}
+                </strong>
+
+                <div class="small text-muted mt-1">
+                    Harus diselesaikan atau row ditolak sebelum commit.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+            <div class="card p-3">
+
+                <small class="text-muted">
+                    Non-Blocking
+                </small>
+
+                <strong class="fs-5">
+                    {{ warning_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTER -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="btn btn-sm {% if not type_filter %}btn-dark{% else %}btn-outline-dark{% endif %}"
+        >
+            Semua
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review?type_filter=blocking"
+            class="btn btn-sm {% if type_filter == 'blocking' %}btn-danger{% else %}btn-outline-danger{% endif %}"
+        >
+            Blocking
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review?type_filter=warning"
+            class="btn btn-sm {% if type_filter == 'warning' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+        >
+            Non-Blocking
+        </a>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="card">
+
+        <div class="card-header bg-white">
+
+            <strong>
+                Review Queue
+            </strong>
+
+            <span class="text-muted ms-2">
+                {{ pager.start_no }}–{{ pager.end_no }}
+                dari
+                {{ pager.total }}
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table
+                class="table table-hover align-middle mb-0"
+                style="min-width: 1200px;"
+            >
+
+                <thead class="table-light">
+
+                    <tr>
+                        <th>Row</th>
+                        <th>Lembaga / Produk</th>
+                        <th>Field</th>
+                        <th>Nilai Asli</th>
+                        <th>Masalah</th>
+                        <th>Suggestion</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in issues %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.row_no }}
+                        </td>
+
+
+                        <td style="min-width: 260px;">
+
+                            <div class="fw-semibold">
+                                {{ item.raw_no_lpk or "-" }}
+                            </div>
+
+                            <div>
+                                {{ item.raw_product_service or "-" }}
+                            </div>
+
+                            <div class="small text-muted">
+                                {{ item.raw_category or "-" }}
+                                /
+                                {{ item.raw_subcategory or "-" }}
+                            </div>
+
+                        </td>
+
+
+                        <td>
+                            <code>
+                                {{ item.field_name or "-" }}
+                            </code>
+                        </td>
+
+
+                        <td style="min-width: 190px;">
+                            {{ item.original_value or "(kosong)" }}
+                        </td>
+
+
+                        <td style="min-width: 300px;">
+                            {{ item.reason }}
+                        </td>
+
+
+                        <td style="min-width: 190px;">
+                            {{ item.suggested_value or "-" }}
+                        </td>
+
+
+                        <td>
+
+                            {% if item.is_blocking %}
+
+                            <span class="badge bg-danger">
+                                Blocking
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-secondary">
+                                Review
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td style="min-width: 320px;">
+
+                            {% if batch.status not in ["COMMITTED", "REJECTED", "FAILED"] %}
+
+                            <div class="d-flex flex-column gap-2">
+
+                                {% if item.rule_id in ["RL-PRODUCT-MATCH", "RL-PRODUCT-WARNING"] or item.field_name == "raw_product_service" %}
+
+                                <a
+                                    href="/products/create"
+                                    target="_blank"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah / Perbaiki Master Produk
+                                </a>
+
+                                {% elif item.rule_id in ["RL-CERT-SCHEME-MISSING", "RL-CERT-SCHEME-AMBIGUOUS"] or item.field_name == "raw_certification_scheme" %}
+
+                                <a
+                                    href="/certification-schemes/create"
+                                    target="_blank"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah Skema Sertifikasi
+                                </a>
+
+                                {% elif item.rule_id in ["RL-STANDARD-MISSING", "RL-STANDARD-TITLE"] or item.field_name in ["raw_standard_number", "raw_standard_title"] %}
+
+                                <a
+                                    href="/standards/create"
+                                    target="_blank"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah / Perbaiki Master Standar
+                                </a>
+
+                                {% elif item.rule_id == "RL-INSTITUTION-MISSING" or item.field_name == "raw_no_lpk" %}
+
+                                <a
+                                    href="/institutions"
+                                    target="_blank"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    Buka Master Lembaga
+                                </a>
+
+                                {% endif %}
+
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/review/{{ item.issue_id }}/recheck"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-success w-100"
+                                    >
+                                        Cek Ulang
+                                    </button>
+                                </form>
+
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/review/{{ item.issue_id }}/reject-row"
+                                    onsubmit="return confirm('Reject seluruh row ini dari batch?');"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger w-100"
+                                    >
+                                        Reject Row
+                                    </button>
+                                </form>
+
+                            </div>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="text-center text-muted py-5"
+                        >
+                            Tidak ada data yang membutuhkan review pada filter ini.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+    {% if pager.total_pages > 1 %}
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+
+        <div class="small text-muted">
+            Halaman {{ pager.page }} dari {{ pager.total_pages }}
+        </div>
+
+
+        <div class="btn-group">
+
+            {% if pager.page > 1 %}
+
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/review?page={{ pager.page - 1 }}&per_page={{ pager.per_page }}&type_filter={{ type_filter }}"
+            >
+                Sebelumnya
+            </a>
+
+            {% endif %}
+
+
+            {% if pager.page < pager.total_pages %}
+
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/review?page={{ pager.page + 1 }}&per_page={{ pager.per_page }}&type_filter={{ type_filter }}"
+            >
+                Berikutnya
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="d-flex justify-content-between mt-4">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/corrections"
+            class="btn btn-outline-secondary"
+        >
+            Kembali ke Auto-Correction
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/preview"
+            class="btn btn-primary"
+        >
+            Preview & Commit
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

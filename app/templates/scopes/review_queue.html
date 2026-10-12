@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+
+        <div>
+
+            <div class="small text-muted">
+                {{ batch.batch_code }} · {{ batch.file_name }}
+            </div>
+
+            <h3 class="mb-1">
+                Review Data
+            </h3>
+
+            <p class="text-muted mb-0">
+                Hanya data yang membutuhkan keputusan manual ditampilkan di sini.
+            </p>
+
+        </div>
+
+        <a
+            href="/scopes/history"
+            class="btn btn-sm btn-outline-secondary"
+        >
+            Riwayat Upload
+        </a>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- FLOW -->
+    <!-- ==================================================== -->
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/corrections"
+            class="btn btn-outline-secondary"
+        >
+            1. Auto-Correction
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="btn btn-primary"
+        >
+            2. Review Data
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/preview"
+            class="btn btn-outline-secondary"
+        >
+            3. Preview & Commit
+        </a>
+
+    </div>
+
+
+    {% if result == "success" %}
+
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    {% if result == "failed" %}
+
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- ==================================================== -->
+    <!-- SUMMARY -->
+    <!-- ==================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Blocking Issue
+                    </div>
+
+                    <div class="fs-4 fw-bold text-danger">
+                        {{ blocking_count }}
+                    </div>
+
+                    <div class="small text-muted">
+                        Harus diselesaikan atau row ditolak sebelum commit.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Review Non-Blocking
+                    </div>
+
+                    <div class="fs-4 fw-bold">
+                        {{ warning_count }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- FILTER -->
+    <!-- ==================================================== -->
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="btn {% if not type_filter %}btn-dark{% else %}btn-outline-dark{% endif %}"
+        >
+            Semua
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review?type_filter=blocking"
+            class="btn {% if type_filter == 'blocking' %}btn-outline-danger active{% else %}btn-outline-danger{% endif %}"
+        >
+            Blocking
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review?type_filter=warning"
+            class="btn {% if type_filter == 'warning' %}btn-outline-secondary active{% else %}btn-outline-secondary{% endif %}"
+        >
+            Non-Blocking
+        </a>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- TABLE -->
+    <!-- ==================================================== -->
+
+    <div class="card">
+
+        <div class="table-responsive">
+
+            <table
+                class="table table-hover align-middle mb-0"
+                style="min-width: 1500px;"
+            >
+
+                <thead class="table-light">
+
+                    <tr>
+                        <th>Row</th>
+                        <th>LPK / Produk</th>
+                        <th>Field</th>
+                        <th>Nilai Asli</th>
+                        <th>Masalah</th>
+                        <th>Suggestion</th>
+                        <th>Status</th>
+                        <th style="min-width: 300px;">
+                            Aksi Penyelesaian
+                        </th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in issues %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.row_no }}
+                        </td>
+
+
+                        <td style="min-width: 300px;">
+
+                            <div class="fw-semibold">
+                                {{ item.raw_no_lpk or "-" }}
+                            </div>
+
+                            <div class="fw-semibold">
+                                {{ item.raw_product_service or "-" }}
+                            </div>
+
+                            <div class="small text-muted">
+
+                                {{ item.raw_category or "-" }}
+
+                                /
+
+                                {{ item.raw_subcategory or "-" }}
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+                            <code>
+                                {{ item.field_name or "-" }}
+                            </code>
+                        </td>
+
+
+                        <td style="min-width: 220px;">
+                            {{ item.original_value or "(kosong)" }}
+                        </td>
+
+
+                        <td style="min-width: 340px;">
+                            {{ item.reason }}
+                        </td>
+
+
+                        <td style="min-width: 220px;">
+                            {{ item.suggested_value or "-" }}
+                        </td>
+
+
+                        <td>
+
+                            {% if item.is_blocking %}
+
+                            <span class="badge bg-danger">
+                                Blocking
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-secondary">
+                                Review
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================================= -->
+                        <!-- AKSI PENYELESAIAN -->
+                        <!-- ================================= -->
+
+                        <td>
+
+                            {% if batch.status not in ["COMMITTED", "REJECTED", "FAILED"] %}
+
+                            <div class="d-grid gap-2">
+
+
+                                <!-- ========================= -->
+                                <!-- MASTER PRODUK -->
+                                <!-- ========================= -->
+
+                                {% if
+                                    item.rule_id in [
+                                        "RL-PRODUCT-MATCH",
+                                        "RL-PRODUCT-WARNING"
+                                    ]
+                                    or
+                                    item.field_name == "raw_product_service"
+                                %}
+
+                                <a
+                                    href="/products/create?source=scope_review&batch_id={{ batch.batch_id }}&issue_id={{ item.issue_id }}&scheme={{ (item.raw_scheme or '')|urlencode }}&category={{ (item.raw_category or '')|urlencode }}&subcategory={{ (item.raw_subcategory or '')|urlencode }}&product_service={{ (item.raw_product_service or '')|urlencode }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah / Perbaiki Master Produk
+                                </a>
+
+                                {% endif %}
+
+
+                                <!-- ========================= -->
+                                <!-- MASTER SKEMA SERTIFIKASI -->
+                                <!-- ========================= -->
+
+                                {% if
+                                    item.rule_id in [
+                                        "RL-CERT-SCHEME-MISSING",
+                                        "RL-CERT-SCHEME-AMBIGUOUS"
+                                    ]
+                                    or
+                                    item.field_name == "raw_certification_scheme"
+                                %}
+
+                                <a
+                                    href="/certification-schemes/create?source=scope_review&batch_id={{ batch.batch_id }}&issue_id={{ item.issue_id }}&name={{ (item.raw_certification_scheme or item.original_value or '')|urlencode }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah / Perbaiki Skema Sertifikasi
+                                </a>
+
+                                {% endif %}
+
+
+                                <!-- ========================= -->
+                                <!-- MASTER STANDAR -->
+                                <!-- ========================= -->
+
+                                {% if
+                                    item.rule_id in [
+                                        "RL-STANDARD-MISSING",
+                                        "RL-STANDARD-TITLE"
+                                    ]
+                                    or
+                                    item.field_name in [
+                                        "raw_standard_number",
+                                        "raw_standard_title"
+                                    ]
+                                %}
+
+                                <a
+                                    href="/standards/create?source=scope_review&batch_id={{ batch.batch_id }}&issue_id={{ item.issue_id }}&standard_number={{ (item.raw_standard_number or '')|urlencode }}&standard_title={{ (item.raw_standard_title or '')|urlencode }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    + Tambah / Perbaiki Master Standar
+                                </a>
+
+                                {% endif %}
+
+
+                                <!-- ========================= -->
+                                <!-- MASTER LEMBAGA -->
+                                <!-- ========================= -->
+
+                                {% if
+                                    item.rule_id == "RL-INSTITUTION-MISSING"
+                                    or
+                                    item.field_name == "raw_no_lpk"
+                                %}
+
+                                <a
+                                    href="/institutions?search={{ (item.raw_no_lpk or '')|urlencode }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    Buka / Perbaiki Master Lembaga
+                                </a>
+
+                                {% endif %}
+
+
+                                <!-- ========================= -->
+                                <!-- CEK ULANG -->
+                                <!-- ========================= -->
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/review/{{ item.issue_id }}/recheck"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-success w-100"
+                                    >
+                                        Cek Ulang Setelah Diperbaiki
+                                    </button>
+
+                                </form>
+
+
+                                <!-- ========================= -->
+                                <!-- REJECT -->
+                                <!-- ========================= -->
+
+                                <form
+                                    method="post"
+                                    action="/scopes/batches/{{ batch.batch_id }}/review/{{ item.issue_id }}/reject-row"
+                                    onsubmit="return confirm('Reject seluruh row ini dari batch?');"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger w-100"
+                                    >
+                                        Reject Row
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            {% else %}
+
+                            <span class="text-muted small">
+                                Batch tidak dapat diubah.
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="text-center text-muted py-5"
+                        >
+                            Tidak ada data yang membutuhkan review.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- PAGINATION -->
+    <!-- ==================================================== -->
+
+    {% if pager.total_pages > 1 %}
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+
+        <div class="small text-muted">
+
+            {{ pager.start_no }}
+            –
+            {{ pager.end_no }}
+
+            dari
+
+            {{ pager.total }}
+
+        </div>
+
+
+        <div class="btn-group">
+
+            {% if pager.page > 1 %}
+
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/review?page={{ pager.page - 1 }}&per_page={{ pager.per_page }}&type_filter={{ type_filter }}"
+            >
+                Sebelumnya
+            </a>
+
+            {% endif %}
+
+
+            {% if pager.page < pager.total_pages %}
+
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/review?page={{ pager.page + 1 }}&per_page={{ pager.per_page }}&type_filter={{ type_filter }}"
+            >
+                Berikutnya
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="d-flex justify-content-between mt-4">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/corrections"
+            class="btn btn-outline-secondary"
+        >
+            ← Auto-Correction
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/preview"
+            class="btn btn-primary"
+        >
+            Preview & Commit →
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

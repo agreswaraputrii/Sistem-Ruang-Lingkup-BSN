@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+    <div>
+
+        <h3 class="mb-1">
+            Master Standar
+        </h3>
+
+        <p class="text-muted mb-0">
+            Daftar referensi Nomor dan Judul Acuan Standar.
+        </p>
+
+    </div>
+
+
+    <div class="d-flex flex-wrap gap-2">
+
+        <a
+            href="/standards/create"
+            class="btn btn-success"
+        >
+            Tambah Data
+        </a>
+
+
+        <a
+            href="/standards/import"
+            class="btn btn-primary"
+        >
+            Import Data
+        </a>
+
+
+        <a
+            href="/standards/template"
+            class="btn btn-outline-primary"
+        >
+            Download Template
+        </a>
+
+
+        <a
+            href="/standards/export/xlsx"
+            class="btn btn-outline-success"
+        >
+            Export Excel
+        </a>
+
+
+        <a
+            href="/standards/export/csv"
+            class="btn btn-outline-secondary"
+        >
+            Export CSV
+        </a>
+
+    </div>
+
+</div>
+
+
+{% if result == "success" %}
+
+<div class="alert alert-success alert-dismissible fade show">
+
+    <strong>
+        Berhasil.
+    </strong>
+
+    {{ message }}
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+    ></button>
+
+</div>
+
+{% endif %}
+
+
+{% if result == "failed" %}
+
+<div class="alert alert-danger alert-dismissible fade show">
+
+    <strong>
+        Gagal.
+    </strong>
+
+    {{ message }}
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+    ></button>
+
+</div>
+
+{% endif %}
+
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body">
+
+        <form
+            method="get"
+            action="/standards"
+        >
+
+            <div class="row g-2">
+
+                <div class="col-md-9">
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        value="{{ search }}"
+                        placeholder="Cari ID, nomor, atau judul standar..."
+                    >
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="d-flex gap-2">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Cari
+                        </button>
+
+
+                        <a
+                            href="/standards"
+                            class="btn btn-outline-secondary"
+                        >
+                            Reset
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-white py-3">
+
+        <strong>
+            Total Data:
+            {{ total }}
+        </strong>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th style="width: 150px;">
+                        ID Standar
+                    </th>
+
+                    <th style="min-width: 260px;">
+                        Nomor Acuan Standar
+                    </th>
+
+                    <th style="min-width: 500px;">
+                        Judul Acuan Standar
+                    </th>
+
+                    <th style="width: 180px;">
+                        Aksi
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            {% for item in items %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ item.standard_code }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+                        {{ item.standard_number }}
+                    </td>
+
+
+                    <td>
+                        {{ item.standard_title }}
+                    </td>
+
+
+                    <td>
+
+                        <div class="d-flex gap-2">
+
+                            <a
+                                href="/standards/{{ item.standard_id }}/edit"
+                                class="btn btn-sm btn-outline-warning"
+                            >
+                                Edit
+                            </a>
+
+
+                            <form
+                                method="post"
+                                action="/standards/{{ item.standard_id }}/delete"
+                                onsubmit="
+                                    return confirm(
+                                        'Yakin ingin menghapus Standar ini?'
+                                    );
+                                "
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                >
+                                    Hapus
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="4"
+                        class="text-center text-muted py-5"
+                    >
+
+                        Belum ada data Master Standar.
+
+                        <br><br>
+
+                        <a
+                            href="/standards/create"
+                            class="btn btn-success"
+                        >
+                            Tambah Data
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

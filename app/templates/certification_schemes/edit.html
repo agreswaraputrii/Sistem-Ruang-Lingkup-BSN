@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+
+            <h3 class="mb-1">
+                Edit Skema Sertifikasi
+            </h3>
+
+            <p class="text-muted mb-0">
+                Perbarui nama Skema Sertifikasi.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/certification-schemes"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+    </div>
+
+
+    {% if status == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>Gagal.</strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Form Skema Sertifikasi
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form
+                method="post"
+                action="/certification-schemes/{{ item.certification_scheme_id }}/edit"
+            >
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Skema Sertifikasi
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ item.certification_scheme_code }}"
+                            readonly
+                        >
+
+                        <div class="form-text">
+                            ID tidak dapat diubah setelah data dibuat.
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-8">
+
+                        <label class="form-label fw-semibold">
+                            Nama Skema Sertifikasi
+                        </label>
+
+                        <input
+                            type="text"
+                            name="certification_scheme_name"
+                            class="form-control"
+                            value="{{ item.certification_scheme_name }}"
+                            required
+                            autofocus
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert alert-light border mt-4 mb-0">
+
+                    <strong>Catatan:</strong>
+
+                    Untuk menjaga konsistensi relasi data,
+                    ID Skema Sertifikasi tidak dapat diedit.
+
+                    Jika terdapat kesalahan ID dari sumber master,
+                    perbaikannya sebaiknya dilakukan melalui sumber data resmi lalu di-import kembali.
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning"
+                    >
+                        Simpan Perubahan
+                    </button>
+
+
+                    <a
+                        href="/certification-schemes"
+                        class="btn btn-outline-secondary"
+                    >
+                        Batal
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

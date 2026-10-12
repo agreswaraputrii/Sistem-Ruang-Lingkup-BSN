@@ -1,0 +1,641 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="container-fluid py-4">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div
+        class="d-flex flex-wrap
+               justify-content-between
+               align-items-start
+               gap-3 mb-4"
+    >
+
+        <div>
+
+            <h3 class="mb-1">
+                Edit Master Produk
+            </h3>
+
+            <p class="text-muted mb-0">
+                Edit satu jalur hubungan Master Produk.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/products"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- ERROR -->
+    <!-- ===================================================== -->
+
+    {% if status == "failed" %}
+
+    <div
+        class="alert alert-danger
+               alert-dismissible fade show"
+    >
+
+        <strong>
+            Gagal.
+        </strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        >
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- FORM -->
+    <!-- ===================================================== -->
+
+    <form
+        method="post"
+        action="/products/{{ product.path_id }}/edit"
+    >
+
+
+        <!-- ================================================= -->
+        <!-- SKEMA -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Skema
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Nama Skema
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="scheme_name"
+                            class="form-control"
+                            value="{{ product.scheme_name }}"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            ID Skema
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="scheme_code"
+                            class="form-control"
+                            value="{{ product.scheme_code }}"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- CATEGORY -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Kategori
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+
+                        <select
+                            name="category_status"
+                            id="category_status"
+                            class="form-select"
+                            onchange="updateCategoryFields()"
+                        >
+
+                            <option
+                                value="VALUE"
+                                {% if product.category_status == "VALUE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Ada Data
+                            </option>
+
+                            <option
+                                value="NOT_APPLICABLE"
+                                {% if product.category_status == "NOT_APPLICABLE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option
+                                value="MISSING"
+                                {% if product.category_status == "MISSING" %}
+                                selected
+                                {% endif %}
+                            >
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Nama Kategori
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="category_name"
+                            id="category_name"
+                            class="form-control"
+                            value="{{ product.category_name or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Kategori
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="category_code"
+                            id="category_code"
+                            class="form-control"
+                            value="{{ product.category_code or '' }}"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- SUBCATEGORY -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Sub Kategori
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+
+                        <select
+                            name="subcategory_status"
+                            id="subcategory_status"
+                            class="form-select"
+                            onchange="updateSubcategoryFields()"
+                        >
+
+                            <option
+                                value="VALUE"
+                                {% if product.subcategory_status == "VALUE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Ada Data
+                            </option>
+
+                            <option
+                                value="NOT_APPLICABLE"
+                                {% if product.subcategory_status == "NOT_APPLICABLE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option
+                                value="MISSING"
+                                {% if product.subcategory_status == "MISSING" %}
+                                selected
+                                {% endif %}
+                            >
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Nama Sub Kategori
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="subcategory_name"
+                            id="subcategory_name"
+                            class="form-control"
+                            value="{{ product.subcategory_name or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Sub Kategori
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="subcategory_code"
+                            id="subcategory_code"
+                            class="form-control"
+                            value="{{ product.subcategory_code or '' }}"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PRODUCT -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Jenis Produk / Proses / Jasa
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                <div class="row g-3">
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+
+                        <select
+                            name="product_service_status"
+                            id="product_service_status"
+                            class="form-select"
+                            onchange="updateProductFields()"
+                        >
+
+                            <option
+                                value="VALUE"
+                                {% if product.product_service_status == "VALUE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Ada Data
+                            </option>
+
+                            <option
+                                value="NOT_APPLICABLE"
+                                {% if product.product_service_status == "NOT_APPLICABLE" %}
+                                selected
+                                {% endif %}
+                            >
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option
+                                value="MISSING"
+                                {% if product.product_service_status == "MISSING" %}
+                                selected
+                                {% endif %}
+                            >
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Jenis
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="product_service_name"
+                            id="product_service_name"
+                            class="form-control"
+                            value="{{ product.product_service_name or '' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Jenis
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="product_service_code"
+                            id="product_service_code"
+                            class="form-control"
+                            value="{{ product.product_service_code or '' }}"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- INFO -->
+        <!-- ================================================= -->
+
+        <div class="alert alert-light border">
+
+            <strong>
+                Aturan:
+            </strong>
+
+            <br>
+
+            <strong>Ada Data</strong>
+            = nama dan ID wajib diisi.
+
+            <br>
+
+            <strong>Tidak Berlaku (-)</strong>
+            = level tersebut memang tidak digunakan.
+
+            <br>
+
+            <strong>Belum Diisi</strong>
+            = level ada secara konsep tetapi datanya belum tersedia.
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- ACTION -->
+        <!-- ================================================= -->
+
+        <div class="d-flex gap-2">
+
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Simpan Perubahan
+            </button>
+
+
+            <a
+                href="/products"
+                class="btn btn-outline-secondary"
+            >
+                Batal
+            </a>
+
+
+        </div>
+
+
+    </form>
+
+
+</div>
+
+
+<script>
+
+    function setFieldState(
+        statusElementId,
+        nameElementId,
+        codeElementId
+    ) {
+
+        const status =
+            document.getElementById(
+                statusElementId
+            ).value;
+
+
+        const nameField =
+            document.getElementById(
+                nameElementId
+            );
+
+
+        const codeField =
+            document.getElementById(
+                codeElementId
+            );
+
+
+        if (status === "VALUE") {
+
+            nameField.disabled = false;
+            codeField.disabled = false;
+
+            nameField.required = true;
+            codeField.required = true;
+
+        } else {
+
+            nameField.value = "";
+            codeField.value = "";
+
+            nameField.disabled = true;
+            codeField.disabled = true;
+
+            nameField.required = false;
+            codeField.required = false;
+
+        }
+
+    }
+
+
+    function updateCategoryFields() {
+
+        setFieldState(
+            "category_status",
+            "category_name",
+            "category_code"
+        );
+
+    }
+
+
+    function updateSubcategoryFields() {
+
+        setFieldState(
+            "subcategory_status",
+            "subcategory_name",
+            "subcategory_code"
+        );
+
+    }
+
+
+    function updateProductFields() {
+
+        setFieldState(
+            "product_service_status",
+            "product_service_name",
+            "product_service_code"
+        );
+
+    }
+
+
+    updateCategoryFields();
+
+    updateSubcategoryFields();
+
+    updateProductFields();
+
+</script>
+
+
+{% endblock %}

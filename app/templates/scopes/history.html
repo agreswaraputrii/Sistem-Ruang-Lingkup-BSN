@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .page-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .history-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 28px rgba(15, 23, 42, .04);
+    }
+
+    .batch-code {
+        font-weight: 750;
+        color: #0f172a;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="page-shell">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+            <div>
+                <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Ruang Lingkup
+                </div>
+
+                <h2 class="mb-1">
+                    Riwayat Upload
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Semua batch tetap tercatat sehingga proses upload, review, dan commit dapat ditelusuri.
+                </p>
+            </div>
+
+
+            <a
+                href="/scopes/import"
+                class="btn btn-primary"
+            >
+                + Upload Baru
+            </a>
+
+        </div>
+
+
+        {% if status == "failed" %}
+
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="card history-card mb-4">
+
+            <div class="card-body">
+
+                <form
+                    method="get"
+                    action="/scopes/history"
+                >
+
+                    <div class="row g-2">
+
+                        <div class="col-lg-6">
+
+                            <input
+                                type="text"
+                                name="search"
+                                value="{{ search }}"
+                                class="form-control"
+                                placeholder="Cari batch code atau nama file..."
+                            >
+
+                        </div>
+
+
+                        <div class="col-lg-4">
+
+                            <select
+                                name="status_filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    Semua Status
+                                </option>
+
+                                {% for value in [
+                                    "WAITING_CORRECTION_APPROVAL",
+                                    "NEED_REVIEW",
+                                    "READY_TO_COMMIT",
+                                    "COMMITTED",
+                                    "REJECTED",
+                                    "FAILED"
+                                ] %}
+
+                                <option
+                                    value="{{ value }}"
+                                    {% if status_filter == value %}selected{% endif %}
+                                >
+                                    {{ value }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-lg-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                Filter
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <div class="card history-card">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Batch</th>
+                            <th>File</th>
+                            <th>Mode</th>
+                            <th>Ringkasan</th>
+                            <th>Status</th>
+                            <th>Waktu</th>
+                            <th></th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for batch in batches %}
+
+                        <tr>
+
+                            <td>
+                                <div class="batch-code">
+                                    {{ batch.batch_code }}
+                                </div>
+                            </td>
+
+
+                            <td style="min-width: 240px;">
+                                {{ batch.file_name }}
+                            </td>
+
+
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    {{ batch.import_mode }}
+                                </span>
+                            </td>
+
+
+                            <td style="min-width: 250px;">
+
+                                <div class="small">
+                                    Total:
+                                    <strong>
+                                        {{ batch.total_rows }}
+                                    </strong>
+                                    · Valid:
+                                    <strong class="text-success">
+                                        {{ batch.valid_count }}
+                                    </strong>
+                                </div>
+
+                                <div class="small">
+                                    Corrected:
+                                    <strong class="text-warning">
+                                        {{ batch.corrected_count }}
+                                    </strong>
+                                    · Review:
+                                    <strong class="text-danger">
+                                        {{ batch.review_count }}
+                                    </strong>
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if batch.status == "READY_TO_COMMIT" %}
+                                <span class="status-pill bg-success-subtle text-success">
+                                    READY
+                                </span>
+
+                                {% elif batch.status == "NEED_REVIEW" %}
+                                <span class="status-pill bg-danger-subtle text-danger">
+                                    NEED REVIEW
+                                </span>
+
+                                {% elif batch.status == "WAITING_CORRECTION_APPROVAL" %}
+                                <span class="status-pill bg-warning-subtle text-warning-emphasis">
+                                    CORRECTION
+                                </span>
+
+                                {% elif batch.status == "COMMITTED" %}
+                                <span class="status-pill bg-primary-subtle text-primary">
+                                    COMMITTED
+                                </span>
+
+                                {% else %}
+                                <span class="status-pill bg-secondary-subtle text-secondary">
+                                    {{ batch.status }}
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+
+                            <td class="small text-muted">
+                                {{ batch.uploaded_at }}
+                            </td>
+
+
+                            <td class="text-end">
+
+                                <a
+                                    href="/scopes/batches/{{ batch.batch_id }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Detail
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                Belum ada riwayat upload.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

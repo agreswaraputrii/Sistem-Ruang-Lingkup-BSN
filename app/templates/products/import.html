@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="container-fluid py-4">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div
+        class="d-flex flex-wrap
+               justify-content-between
+               align-items-start
+               gap-3 mb-4"
+    >
+
+
+        <div>
+
+            <h3 class="mb-1">
+                Import Master Produk
+            </h3>
+
+            <p class="text-muted mb-0">
+                Upload Master Produk dari Excel atau CSV.
+            </p>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+
+            <a
+                href="/products/template"
+                class="btn btn-outline-primary"
+            >
+                Download Template
+            </a>
+
+
+            <a
+                href="/products"
+                class="btn btn-outline-secondary"
+            >
+                Kembali
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SUCCESS -->
+    <!-- ===================================================== -->
+
+    {% if success_message %}
+
+    <div class="alert alert-success">
+
+        <strong>
+            Berhasil.
+        </strong>
+
+        {{ success_message }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- ERROR -->
+    <!-- ===================================================== -->
+
+    {% if error_message %}
+
+    <div class="alert alert-danger">
+
+        <strong>
+            Import gagal.
+        </strong>
+
+        {{ error_message }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- RESULT -->
+    <!-- ===================================================== -->
+
+    {% if import_result %}
+
+    <div class="card shadow-sm mb-4">
+
+
+        <div class="card-header bg-white">
+
+            <strong>
+                Hasil Import
+            </strong>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <div class="row g-3">
+
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-muted small">
+                            Total Baris
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+                            {{ import_result.total_rows }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-muted small">
+                            Jalur Ditambahkan
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+                            {{ import_result.inserted_path_count }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-muted small">
+                            Jalur Sudah Ada
+                        </div>
+
+                        <div class="fs-4 fw-bold">
+                            {{ import_result.existing_path_count }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- FORM -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+
+        <div class="card-header bg-white py-3">
+
+            <h5 class="mb-0">
+                Upload File
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <form
+                action="/products/import"
+                method="post"
+                enctype="multipart/form-data"
+                id="product-import-form"
+            >
+
+
+                <div class="mb-4">
+
+
+                    <label class="form-label fw-semibold">
+                        File Master Produk
+                    </label>
+
+
+                    <input
+                        type="file"
+                        name="file"
+                        class="form-control"
+                        accept=".xlsx,.xls,.csv"
+                        required
+                    >
+
+
+                    <div class="form-text">
+
+                        Belum mempunyai format file?
+
+                        <a href="/products/template">
+                            Download Template Master Produk
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="mb-4">
+
+
+                    <label class="form-label fw-semibold">
+                        Mode Import
+                    </label>
+
+
+                    <select
+                        name="import_mode"
+                        id="import_mode"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="append">
+                            Tambah Data
+                        </option>
+
+                        <option value="replace">
+                            Upload Ulang Semua Data
+                        </option>
+
+                    </select>
+
+
+                </div>
+
+
+                <div class="alert alert-light border">
+
+                    <strong>
+                        Aturan data:
+                    </strong>
+
+                    <br><br>
+
+                    <code>ada nilai</code>
+                    → data tersedia
+
+                    <br>
+
+                    <code>-</code>
+                    → level memang tidak ada / tidak berlaku
+
+                    <br>
+
+                    <code>kosong</code>
+                    → level ada secara konsep tetapi belum diisi
+
+                </div>
+
+
+                <div class="alert alert-info">
+
+                    Master Produk tidak menggunakan
+                    cleaning ataupun auto-correct.
+
+                    Nama dan ID pada setiap level
+                    harus memiliki status yang sama.
+
+                </div>
+
+
+                <div
+                    id="replace-warning"
+                    class="alert alert-warning d-none"
+                >
+
+                    <strong>
+                        Upload Ulang Semua Data
+                    </strong>
+
+                    akan membangun ulang Master Produk
+                    berdasarkan isi file yang di-upload.
+
+                </div>
+
+
+                <div class="d-flex gap-2">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Import Data
+                    </button>
+
+
+                    <a
+                        href="/products"
+                        class="btn btn-outline-secondary"
+                    >
+                        Batal
+                    </a>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- FORMAT -->
+    <!-- ===================================================== -->
+
+    <div class="card shadow-sm">
+
+
+        <div
+            class="card-header
+                   bg-white
+                   py-3
+                   d-flex
+                   justify-content-between
+                   align-items-center"
+        >
+
+
+            <div>
+
+                <h5 class="mb-1">
+                    Format Kolom
+                </h5>
+
+                <small class="text-muted">
+                    Gunakan nama kolom yang sama persis.
+                </small>
+
+            </div>
+
+
+            <a
+                href="/products/template"
+                class="btn btn-sm btn-outline-primary"
+            >
+                Download Template
+            </a>
+
+
+        </div>
+
+
+        <div class="table-responsive">
+
+
+            <table class="table mb-0">
+
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>No.</th>
+                        <th>Kolom</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr>
+                        <td>1</td>
+                        <td><code>skema</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td><code>id_skema</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td><code>kategori</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td><code>id_kategori</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td><code>sub_kategori</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>6</td>
+                        <td><code>id_sub_kategori</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>7</td>
+                        <td><code>jenis</code></td>
+                    </tr>
+
+                    <tr>
+                        <td>8</td>
+                        <td><code>id_jenis</code></td>
+                    </tr>
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    const importMode =
+        document.getElementById(
+            "import_mode"
+        );
+
+
+    const warning =
+        document.getElementById(
+            "replace-warning"
+        );
+
+
+    const form =
+        document.getElementById(
+            "product-import-form"
+        );
+
+
+    function updateMode() {
+
+        if (
+            importMode.value === "replace"
+        ) {
+
+            warning.classList.remove(
+                "d-none"
+            );
+
+        } else {
+
+            warning.classList.add(
+                "d-none"
+            );
+
+        }
+
+    }
+
+
+    importMode.addEventListener(
+        "change",
+        updateMode
+    );
+
+
+    form.addEventListener(
+        "submit",
+        function(event) {
+
+            if (
+                importMode.value === "replace"
+            ) {
+
+                const confirmed =
+                    confirm(
+                        "Upload Ulang Semua Data akan "
+                        + "membangun ulang seluruh Master Produk "
+                        + "berdasarkan file ini.\n\n"
+                        + "Lanjutkan?"
+                    );
+
+
+                if (!confirmed) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+
+        }
+    );
+
+
+    updateMode();
+
+</script>
+
+
+{% endblock %}

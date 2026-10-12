@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+.workflow-shell {max-width:1450px;margin:0 auto;}
+.workflow-tabs {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.workflow-tab {text-decoration:none;padding:10px 15px;border-radius:9px;border:1px solid #dbe3ee;color:#475569;background:#fff;font-weight:600;font-size:14px;}
+.workflow-tab.active {background:#0d6efd;color:#fff;border-color:#0d6efd;}
+.preview-card {border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;}
+.commit-panel {border:1px solid #dbe3ee;border-radius:14px;background:#fff;padding:20px;}
+</style>
+
+<div class="container-fluid py-4">
+<div class="workflow-shell">
+
+    <div class="mb-3">
+
+        <div class="small text-muted">
+            {{ batch.batch_code }} · {{ batch.file_name }}
+        </div>
+
+        <h3 class="mb-1">
+            Preview & Commit
+        </h3>
+
+        <p class="text-muted mb-0">
+            Periksa ringkasan akhir sebelum data dipindahkan ke Data Ruang Lingkup.
+        </p>
+
+    </div>
+
+
+    <div class="workflow-tabs">
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/corrections"
+            class="workflow-tab"
+        >
+            1. Auto-Correction
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/review"
+            class="workflow-tab"
+        >
+            2. Review Data
+        </a>
+
+        <a
+            href="/scopes/batches/{{ batch.batch_id }}/preview"
+            class="workflow-tab active"
+        >
+            3. Preview & Commit
+        </a>
+
+    </div>
+
+
+    {% if result == "failed" %}
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+    {% endif %}
+
+
+    <div class="commit-panel mb-4">
+
+        <div class="row g-3 align-items-center">
+
+            <div class="col-lg-8">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <div class="small text-muted">
+                            Data diproses
+                        </div>
+                        <div class="fs-4 fw-bold">
+                            {{ active_count }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small text-muted">
+                            Rejected
+                        </div>
+                        <div class="fs-4 fw-bold">
+                            {{ rejected_count }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small text-muted">
+                            Correction Pending
+                        </div>
+                        <div class="fs-4 fw-bold {% if pending_corrections %}text-warning{% else %}text-success{% endif %}">
+                            {{ pending_corrections }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small text-muted">
+                            Blocking Issue
+                        </div>
+                        <div class="fs-4 fw-bold {% if blocking_count %}text-danger{% else %}text-success{% endif %}">
+                            {{ blocking_count }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-4 text-lg-end">
+
+                {% if can_commit %}
+
+                <form
+                    method="post"
+                    action="/scopes/batches/{{ batch.batch_id }}/commit"
+                    onsubmit="return confirm('Commit batch {{ batch.batch_code }} ke Data Ruang Lingkup?');"
+                >
+                    <button
+                        type="submit"
+                        class="btn btn-success btn-lg px-4"
+                    >
+                        Commit Data
+                    </button>
+                </form>
+
+                {% else %}
+
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-lg"
+                    disabled
+                >
+                    Commit Belum Tersedia
+                </button>
+
+                <div class="small text-muted mt-2">
+                    Selesaikan Auto-Correction dan Blocking Issue terlebih dahulu.
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card preview-card">
+
+        <div class="card-header bg-white py-3">
+
+            <strong>
+                Preview Data Final
+            </strong>
+
+            <span class="text-muted ms-2">
+                {{ pager.start_no }}–{{ pager.end_no }} dari {{ pager.total }}
+            </span>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0" style="min-width:1350px;">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Row</th>
+                        <th>Lembaga</th>
+                        <th>No. Urut</th>
+                        <th>Skema</th>
+                        <th>Kategori</th>
+                        <th>Sub Kategori</th>
+                        <th>Jenis</th>
+                        <th>Standar</th>
+                        <th>Skema Sertifikasi</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in rows %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.source_row }}
+                        </td>
+
+                        <td style="min-width:220px;">
+                            <div class="fw-semibold">
+                                {{ item.id_lspro or item.raw_no_lpk or "-" }}
+                            </div>
+                            <div class="small text-muted">
+                                {{ item.name_lspro or "-" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {{ item.resolved_product_order_no or "-" }}
+                        </td>
+
+                        <td>
+                            {{ item.raw_scheme or "-" }}
+                        </td>
+
+                        <td style="min-width:190px;">
+                            {{ item.raw_category or "-" }}
+                        </td>
+
+                        <td style="min-width:190px;">
+                            {{ item.raw_subcategory or "-" }}
+                        </td>
+
+                        <td style="min-width:220px;">
+                            {{ item.raw_product_service or "-" }}
+                        </td>
+
+                        <td style="min-width:240px;">
+                            <div class="fw-semibold">
+                                {{ item.raw_standard_number or "-" }}
+                            </div>
+                            <div class="small text-success">
+                                {{ item.standard_code or "" }}
+                            </div>
+                        </td>
+
+                        <td style="min-width:240px;">
+                            {{ item.raw_certification_scheme or "-" }}
+                            <div class="small text-success">
+                                {{ item.certification_scheme_code or "" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if item.row_status == "Valid" %}
+                                <span class="badge bg-success">Valid</span>
+                            {% elif item.row_status == "Corrected" %}
+                                <span class="badge bg-warning text-dark">Corrected</span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ item.row_status }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-5">
+                            Tidak ada data preview.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    {% if pager.total_pages > 1 %}
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+
+        <div class="small text-muted">
+            Halaman {{ pager.page }} dari {{ pager.total_pages }}
+        </div>
+
+        <div class="btn-group">
+
+            {% if pager.page > 1 %}
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/preview?page={{ pager.page - 1 }}&per_page={{ pager.per_page }}"
+            >
+                Sebelumnya
+            </a>
+            {% endif %}
+
+            {% if pager.page < pager.total_pages %}
+            <a
+                class="btn btn-outline-secondary"
+                href="/scopes/batches/{{ batch.batch_id }}/preview?page={{ pager.page + 1 }}&per_page={{ pager.per_page }}"
+            >
+                Berikutnya
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+</div>
+
+{% endblock %}

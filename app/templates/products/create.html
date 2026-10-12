@@ -1,0 +1,2491 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+
+        <div>
+            <h3 class="mb-1">
+                Tambah Master Produk
+            </h3>
+
+            <p class="text-muted mb-0">
+                Pilih data yang sudah tersedia pada master atau tambahkan data baru.
+            </p>
+        </div>
+
+        {% if review_prefill.active %}
+
+        <a
+            href="/scopes/batches/{{ review_prefill.batch_id }}/review"
+            class="btn btn-outline-secondary"
+        >
+            Kembali ke Review
+        </a>
+
+        {% else %}
+
+        <a href="/products" class="btn btn-outline-secondary">
+            Kembali
+        </a>
+
+        {% endif %}
+
+    </div>
+
+
+    {% if review_prefill.active %}
+
+    <div class="alert alert-primary border-0 shadow-sm mb-4">
+
+        <div class="d-flex flex-wrap justify-content-between gap-3">
+
+            <div>
+
+                <div class="fw-semibold">
+                    Form dibuka dari Review Data
+                </div>
+
+                <div class="small mt-1">
+                    Batch:
+                    <strong>
+                        {{ review_prefill.batch_id }}
+                    </strong>
+                    · Row:
+                    <strong>
+                        {{ review_prefill.row_no }}
+                    </strong>
+                    · LPK:
+                    <strong>
+                        {{ review_prefill.raw_no_lpk or "-" }}
+                    </strong>
+                </div>
+
+                <div class="small mt-2">
+                    <strong>Masalah:</strong>
+                    {{ review_prefill.reason }}
+                </div>
+
+            </div>
+
+
+            <div class="small text-muted">
+                Field yang dapat dikenali dari data Ruang Lingkup
+                akan terisi otomatis.
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- ERROR MESSAGE -->
+    <!-- ===================================================== -->
+
+    {% if status == "failed" %}
+
+    <div class="alert alert-danger alert-dismissible fade show">
+
+        <strong>Gagal.</strong>
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+        ></button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- FORM -->
+    <!-- ===================================================== -->
+
+    <form
+        method="post"
+        action="/products/create"
+        id="productForm"
+    >
+
+        <input
+            type="hidden"
+            name="source"
+            value="{% if review_prefill.active %}scope_review{% endif %}"
+        >
+
+        <input
+            type="hidden"
+            name="batch_id"
+            value="{% if review_prefill.active %}{{ review_prefill.batch_id }}{% endif %}"
+        >
+
+        <input
+            type="hidden"
+            name="issue_id"
+            value="{% if review_prefill.active %}{{ review_prefill.issue_id }}{% endif %}"
+        >
+
+        <!-- ================================================= -->
+        <!-- VALUES YANG DIKIRIM KE BACKEND -->
+        <!-- ================================================= -->
+
+        <input
+            type="hidden"
+            name="scheme_name"
+            id="scheme_name"
+        >
+
+        <input
+            type="hidden"
+            name="scheme_code"
+            id="scheme_code"
+        >
+
+
+        <input
+            type="hidden"
+            name="category_name"
+            id="category_name"
+        >
+
+        <input
+            type="hidden"
+            name="category_code"
+            id="category_code"
+        >
+
+
+        <input
+            type="hidden"
+            name="subcategory_name"
+            id="subcategory_name"
+        >
+
+        <input
+            type="hidden"
+            name="subcategory_code"
+            id="subcategory_code"
+        >
+
+
+        <input
+            type="hidden"
+            name="product_service_name"
+            id="product_service_name"
+        >
+
+        <input
+            type="hidden"
+            name="product_service_code"
+            id="product_service_code"
+        >
+
+
+        <!-- ================================================= -->
+        <!-- SKEMA -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Skema
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Nama Skema
+                        </label>
+
+                        <select
+                            id="scheme_select"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="">
+                                -- Pilih Skema --
+                            </option>
+
+                            {% for item in schemes %}
+
+                            <option
+                                value="{{ item.scheme_id }}"
+                                data-name="{{ item.scheme_name }}"
+                                data-code="{{ item.scheme_code }}"
+                            >
+                                {{ item.scheme_name }}
+                            </option>
+
+                            {% endfor %}
+
+                            <option value="__NEW__">
+                                + Tambah Skema Baru
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            ID Skema
+                        </label>
+
+                        <input
+                            type="text"
+                            id="scheme_code_display"
+                            class="form-control"
+                            placeholder="ID otomatis dari master"
+                            readonly
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TAMBAH SKEMA BARU -->
+
+                <div
+                    id="new_scheme_box"
+                    class="row g-3 mt-2 d-none"
+                >
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Nama Skema Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_scheme_name"
+                            class="form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            ID Skema Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_scheme_code"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- KATEGORI -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Kategori
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+                        <select
+                            name="category_status"
+                            id="category_status"
+                            class="form-select"
+                        >
+
+                            <option value="VALUE">
+                                Ada Data
+                            </option>
+
+                            <option value="NOT_APPLICABLE">
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option value="MISSING">
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Nama Kategori
+                        </label>
+
+                        <select
+                            id="category_select"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                -- Pilih Kategori --
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Kategori
+                        </label>
+
+                        <input
+                            type="text"
+                            id="category_code_display"
+                            class="form-control"
+                            placeholder="ID otomatis dari master"
+                            readonly
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TAMBAH KATEGORI BARU -->
+
+                <div
+                    id="new_category_box"
+                    class="row g-3 mt-2 d-none"
+                >
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Nama Kategori Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_category_name"
+                            class="form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            ID Kategori Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_category_code"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- SUB KATEGORI -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Sub Kategori
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+                        <select
+                            name="subcategory_status"
+                            id="subcategory_status"
+                            class="form-select"
+                        >
+
+                            <option value="VALUE">
+                                Ada Data
+                            </option>
+
+                            <option value="NOT_APPLICABLE">
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option value="MISSING">
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Nama Sub Kategori
+                        </label>
+
+                        <select
+                            id="subcategory_select"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                -- Pilih Sub Kategori --
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Sub Kategori
+                        </label>
+
+                        <input
+                            type="text"
+                            id="subcategory_code_display"
+                            class="form-control"
+                            placeholder="ID otomatis dari master"
+                            readonly
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TAMBAH SUB KATEGORI BARU -->
+
+                <div
+                    id="new_subcategory_box"
+                    class="row g-3 mt-2 d-none"
+                >
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Nama Sub Kategori Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_subcategory_name"
+                            class="form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            ID Sub Kategori Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_subcategory_code"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- JENIS -->
+        <!-- ================================================= -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-white py-3">
+
+                <h5 class="mb-0">
+                    Jenis Produk / Proses / Jasa
+                </h5>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+                        <select
+                            name="product_service_status"
+                            id="product_service_status"
+                            class="form-select"
+                        >
+
+                            <option value="VALUE">
+                                Ada Data
+                            </option>
+
+                            <option value="NOT_APPLICABLE">
+                                Tidak Berlaku (-)
+                            </option>
+
+                            <option value="MISSING">
+                                Belum Diisi
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Jenis
+                        </label>
+
+                        <select
+                            id="product_service_select"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                -- Pilih Jenis --
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            ID Jenis
+                        </label>
+
+                        <input
+                            type="text"
+                            id="product_service_code_display"
+                            class="form-control"
+                            placeholder="ID otomatis dari master"
+                            readonly
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TAMBAH JENIS BARU -->
+
+                <div
+                    id="new_product_box"
+                    class="row g-3 mt-2 d-none"
+                >
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Nama Jenis Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_product_name"
+                            class="form-control"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            ID Jenis Baru
+                        </label>
+
+                        <input
+                            type="text"
+                            id="new_product_code"
+                            class="form-control"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- INFORMATION -->
+        <!-- ================================================= -->
+
+        <div class="alert alert-info">
+
+            <strong>Informasi:</strong>
+
+            Jika memilih data yang sudah tersedia,
+            ID akan otomatis mengikuti data Master Produk.
+
+            <br>
+
+            Pilih
+            <strong>+ Tambah ... Baru</strong>
+            hanya jika data memang belum tersedia.
+
+        </div>
+
+
+        <div class="alert alert-light border">
+
+            <strong>Aturan status:</strong>
+
+            <br>
+
+            <strong>Ada Data</strong>
+            = data memiliki nama dan ID.
+
+            <br>
+
+            <strong>Tidak Berlaku (-)</strong>
+            = level tersebut memang tidak berlaku.
+
+            <br>
+
+            <strong>Belum Diisi</strong>
+            = level tersebut ada, tetapi nilainya belum tersedia.
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- ACTION -->
+        <!-- ================================================= -->
+
+        <div class="d-flex gap-2">
+
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+                {% if review_prefill.active %}
+                    Simpan & Selesaikan Review
+                {% else %}
+                    Simpan Data
+                {% endif %}
+            </button>
+
+
+            {% if review_prefill.active %}
+
+            <a
+                href="/scopes/batches/{{ review_prefill.batch_id }}/review"
+                class="btn btn-outline-secondary"
+            >
+                Batal & Kembali ke Review
+            </a>
+
+            {% else %}
+
+            <a
+                href="/products"
+                class="btn btn-outline-secondary"
+            >
+                Batal
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- MASTER DATA JSON -->
+<!-- ========================================================= -->
+
+<script type="application/json" id="categories-data">
+    {{ categories | tojson }}
+</script>
+
+<script type="application/json" id="subcategories-data">
+    {{ subcategories | tojson }}
+</script>
+
+<script type="application/json" id="products-data">
+    {{ product_services | tojson }}
+</script>
+
+<script type="application/json" id="review-prefill-data">
+    {{ review_prefill | tojson }}
+</script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        // ====================================================
+        // MASTER DATA
+        // ====================================================
+
+        const categories = JSON.parse(
+            document
+                .getElementById("categories-data")
+                .textContent
+        );
+
+
+        const subcategories = JSON.parse(
+            document
+                .getElementById("subcategories-data")
+                .textContent
+        );
+
+
+        const productServices = JSON.parse(
+            document
+                .getElementById("products-data")
+                .textContent
+        );
+
+
+        const reviewPrefill = JSON.parse(
+            document
+                .getElementById("review-prefill-data")
+                .textContent
+        );
+
+
+        // ====================================================
+        // ELEMENTS
+        // ====================================================
+
+        const form =
+            document.getElementById(
+                "productForm"
+            );
+
+
+        const schemeSelect =
+            document.getElementById(
+                "scheme_select"
+            );
+
+
+        const categoryStatus =
+            document.getElementById(
+                "category_status"
+            );
+
+
+        const categorySelect =
+            document.getElementById(
+                "category_select"
+            );
+
+
+        const subcategoryStatus =
+            document.getElementById(
+                "subcategory_status"
+            );
+
+
+        const subcategorySelect =
+            document.getElementById(
+                "subcategory_select"
+            );
+
+
+        const productStatus =
+            document.getElementById(
+                "product_service_status"
+            );
+
+
+        const productSelect =
+            document.getElementById(
+                "product_service_select"
+            );
+
+
+        // ====================================================
+        // HELPER
+        // ====================================================
+
+        function clearSelect(
+            select,
+            placeholder
+        ) {
+
+            select.innerHTML = "";
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value = "";
+
+            option.textContent =
+                placeholder;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+
+
+        function addNewOption(
+            select,
+            label
+        ) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                "__NEW__";
+
+
+            option.textContent =
+                label;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+
+
+        function resetHidden(
+            nameId,
+            codeId,
+            displayId
+        ) {
+
+            document.getElementById(
+                nameId
+            ).value = "";
+
+
+            document.getElementById(
+                codeId
+            ).value = "";
+
+
+            document.getElementById(
+                displayId
+            ).value = "";
+
+        }
+
+
+        // ====================================================
+        // SCHEME
+        // ====================================================
+
+        function handleSchemeChange() {
+
+            const schemeValue =
+                schemeSelect.value;
+
+
+            const newBox =
+                document.getElementById(
+                    "new_scheme_box"
+                );
+
+
+            if (
+                schemeValue === "__NEW__"
+            ) {
+
+                newBox.classList.remove(
+                    "d-none"
+                );
+
+
+                resetHidden(
+                    "scheme_name",
+                    "scheme_code",
+                    "scheme_code_display"
+                );
+
+            }
+
+            else if (schemeValue) {
+
+                newBox.classList.add(
+                    "d-none"
+                );
+
+
+                const selectedOption =
+                    schemeSelect.options[
+                        schemeSelect.selectedIndex
+                    ];
+
+
+                document.getElementById(
+                    "scheme_name"
+                ).value =
+                    selectedOption.dataset.name || "";
+
+
+                document.getElementById(
+                    "scheme_code"
+                ).value =
+                    selectedOption.dataset.code || "";
+
+
+                document.getElementById(
+                    "scheme_code_display"
+                ).value =
+                    selectedOption.dataset.code || "";
+
+            }
+
+            else {
+
+                newBox.classList.add(
+                    "d-none"
+                );
+
+
+                resetHidden(
+                    "scheme_name",
+                    "scheme_code",
+                    "scheme_code_display"
+                );
+
+            }
+
+
+            loadCategories();
+
+        }
+
+
+        // ====================================================
+        // CATEGORY LIST
+        // ====================================================
+
+        function loadCategories() {
+
+            clearSelect(
+                categorySelect,
+                "-- Pilih Kategori --"
+            );
+
+
+            const schemeId =
+                schemeSelect.value;
+
+
+            if (
+                schemeId
+                &&
+                schemeId !== "__NEW__"
+            ) {
+
+                categories.forEach(
+                    function (item) {
+
+                        if (
+                            String(
+                                item.scheme_id
+                            )
+                            !==
+                            String(
+                                schemeId
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            item.category_id;
+
+
+                        option.textContent =
+                            item.category_name;
+
+
+                        option.dataset.name =
+                            item.category_name;
+
+
+                        option.dataset.code =
+                            item.category_code;
+
+
+                        categorySelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+            }
+
+
+            addNewOption(
+                categorySelect,
+                "+ Tambah Kategori Baru"
+            );
+
+
+            resetHidden(
+                "category_name",
+                "category_code",
+                "category_code_display"
+            );
+
+
+            document
+                .getElementById(
+                    "new_category_box"
+                )
+                .classList.add(
+                    "d-none"
+                );
+
+
+            loadSubcategories();
+
+        }
+
+
+        // ====================================================
+        // CATEGORY CHANGE
+        // ====================================================
+
+        function handleCategoryChange() {
+
+            if (
+                categoryStatus.value
+                !==
+                "VALUE"
+            ) {
+
+                categorySelect.disabled =
+                    true;
+
+
+                document
+                    .getElementById(
+                        "new_category_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "category_name",
+                    "category_code",
+                    "category_code_display"
+                );
+
+
+                loadSubcategories();
+
+                return;
+
+            }
+
+
+            categorySelect.disabled =
+                false;
+
+
+            if (
+                categorySelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document
+                    .getElementById(
+                        "new_category_box"
+                    )
+                    .classList.remove(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "category_name",
+                    "category_code",
+                    "category_code_display"
+                );
+
+            }
+
+            else if (
+                categorySelect.value
+            ) {
+
+                document
+                    .getElementById(
+                        "new_category_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                const option =
+                    categorySelect.options[
+                        categorySelect.selectedIndex
+                    ];
+
+
+                document.getElementById(
+                    "category_name"
+                ).value =
+                    option.dataset.name || "";
+
+
+                document.getElementById(
+                    "category_code"
+                ).value =
+                    option.dataset.code || "";
+
+
+                document.getElementById(
+                    "category_code_display"
+                ).value =
+                    option.dataset.code || "";
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "new_category_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "category_name",
+                    "category_code",
+                    "category_code_display"
+                );
+
+            }
+
+
+            loadSubcategories();
+
+        }
+
+
+        // ====================================================
+        // LOAD SUBCATEGORY
+        // ====================================================
+
+        function loadSubcategories() {
+
+            clearSelect(
+                subcategorySelect,
+                "-- Pilih Sub Kategori --"
+            );
+
+
+            const schemeId =
+                schemeSelect.value;
+
+
+            let categoryId = null;
+
+
+            if (
+                categoryStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                categorySelect.value
+
+                &&
+
+                categorySelect.value
+                !==
+                "__NEW__"
+            ) {
+
+                categoryId =
+                    categorySelect.value;
+
+            }
+
+
+            if (
+                schemeId
+                &&
+                schemeId !== "__NEW__"
+            ) {
+
+                subcategories.forEach(
+                    function (item) {
+
+                        if (
+                            String(
+                                item.scheme_id
+                            )
+                            !==
+                            String(
+                                schemeId
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        if (
+                            categoryId !== null
+                        ) {
+
+                            if (
+                                String(
+                                    item.category_id
+                                )
+                                !==
+                                String(
+                                    categoryId
+                                )
+                            ) {
+                                return;
+                            }
+
+                        }
+
+                        else {
+
+                            if (
+                                item.category_id
+                                !==
+                                null
+                            ) {
+                                return;
+                            }
+
+                        }
+
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            item.subcategory_id;
+
+
+                        option.textContent =
+                            item.subcategory_name;
+
+
+                        option.dataset.name =
+                            item.subcategory_name;
+
+
+                        option.dataset.code =
+                            item.subcategory_code;
+
+
+                        subcategorySelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+            }
+
+
+            addNewOption(
+                subcategorySelect,
+                "+ Tambah Sub Kategori Baru"
+            );
+
+
+            resetHidden(
+                "subcategory_name",
+                "subcategory_code",
+                "subcategory_code_display"
+            );
+
+
+            document
+                .getElementById(
+                    "new_subcategory_box"
+                )
+                .classList.add(
+                    "d-none"
+                );
+
+
+            loadProducts();
+
+        }
+
+
+        // ====================================================
+        // SUBCATEGORY CHANGE
+        // ====================================================
+
+        function handleSubcategoryChange() {
+
+            if (
+                subcategoryStatus.value
+                !==
+                "VALUE"
+            ) {
+
+                subcategorySelect.disabled =
+                    true;
+
+
+                document
+                    .getElementById(
+                        "new_subcategory_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "subcategory_name",
+                    "subcategory_code",
+                    "subcategory_code_display"
+                );
+
+
+                loadProducts();
+
+                return;
+
+            }
+
+
+            subcategorySelect.disabled =
+                false;
+
+
+            if (
+                subcategorySelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document
+                    .getElementById(
+                        "new_subcategory_box"
+                    )
+                    .classList.remove(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "subcategory_name",
+                    "subcategory_code",
+                    "subcategory_code_display"
+                );
+
+            }
+
+            else if (
+                subcategorySelect.value
+            ) {
+
+                document
+                    .getElementById(
+                        "new_subcategory_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                const option =
+                    subcategorySelect.options[
+                        subcategorySelect.selectedIndex
+                    ];
+
+
+                document.getElementById(
+                    "subcategory_name"
+                ).value =
+                    option.dataset.name || "";
+
+
+                document.getElementById(
+                    "subcategory_code"
+                ).value =
+                    option.dataset.code || "";
+
+
+                document.getElementById(
+                    "subcategory_code_display"
+                ).value =
+                    option.dataset.code || "";
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "new_subcategory_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "subcategory_name",
+                    "subcategory_code",
+                    "subcategory_code_display"
+                );
+
+            }
+
+
+            loadProducts();
+
+        }
+
+
+        // ====================================================
+        // LOAD PRODUCT
+        // ====================================================
+
+        function loadProducts() {
+
+            clearSelect(
+                productSelect,
+                "-- Pilih Jenis --"
+            );
+
+
+            const schemeId =
+                schemeSelect.value;
+
+
+            let categoryId = null;
+
+            let subcategoryId = null;
+
+
+            if (
+                categoryStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                categorySelect.value
+
+                &&
+
+                categorySelect.value
+                !==
+                "__NEW__"
+            ) {
+
+                categoryId =
+                    categorySelect.value;
+
+            }
+
+
+            if (
+                subcategoryStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                subcategorySelect.value
+
+                &&
+
+                subcategorySelect.value
+                !==
+                "__NEW__"
+            ) {
+
+                subcategoryId =
+                    subcategorySelect.value;
+
+            }
+
+
+            if (
+                schemeId
+                &&
+                schemeId !== "__NEW__"
+            ) {
+
+                productServices.forEach(
+                    function (item) {
+
+                        if (
+                            String(
+                                item.scheme_id
+                            )
+                            !==
+                            String(
+                                schemeId
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        if (
+                            categoryId !== null
+                        ) {
+
+                            if (
+                                String(
+                                    item.category_id
+                                )
+                                !==
+                                String(
+                                    categoryId
+                                )
+                            ) {
+                                return;
+                            }
+
+                        }
+
+                        else {
+
+                            if (
+                                item.category_id
+                                !==
+                                null
+                            ) {
+                                return;
+                            }
+
+                        }
+
+
+                        if (
+                            subcategoryId !== null
+                        ) {
+
+                            if (
+                                String(
+                                    item.subcategory_id
+                                )
+                                !==
+                                String(
+                                    subcategoryId
+                                )
+                            ) {
+                                return;
+                            }
+
+                        }
+
+                        else {
+
+                            if (
+                                item.subcategory_id
+                                !==
+                                null
+                            ) {
+                                return;
+                            }
+
+                        }
+
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+
+                        option.value =
+                            item.product_service_id;
+
+
+                        option.textContent =
+                            item.product_service_name;
+
+
+                        option.dataset.name =
+                            item.product_service_name;
+
+
+                        option.dataset.code =
+                            item.product_service_code;
+
+
+                        productSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+            }
+
+
+            addNewOption(
+                productSelect,
+                "+ Tambah Jenis Baru"
+            );
+
+
+            resetHidden(
+                "product_service_name",
+                "product_service_code",
+                "product_service_code_display"
+            );
+
+
+            document
+                .getElementById(
+                    "new_product_box"
+                )
+                .classList.add(
+                    "d-none"
+                );
+
+        }
+
+
+        // ====================================================
+        // PRODUCT CHANGE
+        // ====================================================
+
+        function handleProductChange() {
+
+            if (
+                productStatus.value
+                !==
+                "VALUE"
+            ) {
+
+                productSelect.disabled =
+                    true;
+
+
+                document
+                    .getElementById(
+                        "new_product_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "product_service_name",
+                    "product_service_code",
+                    "product_service_code_display"
+                );
+
+
+                return;
+
+            }
+
+
+            productSelect.disabled =
+                false;
+
+
+            if (
+                productSelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document
+                    .getElementById(
+                        "new_product_box"
+                    )
+                    .classList.remove(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "product_service_name",
+                    "product_service_code",
+                    "product_service_code_display"
+                );
+
+            }
+
+            else if (
+                productSelect.value
+            ) {
+
+                document
+                    .getElementById(
+                        "new_product_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                const option =
+                    productSelect.options[
+                        productSelect.selectedIndex
+                    ];
+
+
+                document.getElementById(
+                    "product_service_name"
+                ).value =
+                    option.dataset.name || "";
+
+
+                document.getElementById(
+                    "product_service_code"
+                ).value =
+                    option.dataset.code || "";
+
+
+                document.getElementById(
+                    "product_service_code_display"
+                ).value =
+                    option.dataset.code || "";
+
+            }
+
+            else {
+
+                document
+                    .getElementById(
+                        "new_product_box"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
+
+
+                resetHidden(
+                    "product_service_name",
+                    "product_service_code",
+                    "product_service_code_display"
+                );
+
+            }
+
+        }
+
+
+        // ====================================================
+        // COPY NEW VALUES BEFORE SUBMIT
+        // ====================================================
+
+        function copyNewValues() {
+
+            if (
+                schemeSelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document.getElementById(
+                    "scheme_name"
+                ).value =
+                    document.getElementById(
+                        "new_scheme_name"
+                    ).value;
+
+
+                document.getElementById(
+                    "scheme_code"
+                ).value =
+                    document.getElementById(
+                        "new_scheme_code"
+                    ).value;
+
+            }
+
+
+            if (
+                categoryStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                categorySelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document.getElementById(
+                    "category_name"
+                ).value =
+                    document.getElementById(
+                        "new_category_name"
+                    ).value;
+
+
+                document.getElementById(
+                    "category_code"
+                ).value =
+                    document.getElementById(
+                        "new_category_code"
+                    ).value;
+
+            }
+
+
+            if (
+                subcategoryStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                subcategorySelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document.getElementById(
+                    "subcategory_name"
+                ).value =
+                    document.getElementById(
+                        "new_subcategory_name"
+                    ).value;
+
+
+                document.getElementById(
+                    "subcategory_code"
+                ).value =
+                    document.getElementById(
+                        "new_subcategory_code"
+                    ).value;
+
+            }
+
+
+            if (
+                productStatus.value
+                ===
+                "VALUE"
+
+                &&
+
+                productSelect.value
+                ===
+                "__NEW__"
+            ) {
+
+                document.getElementById(
+                    "product_service_name"
+                ).value =
+                    document.getElementById(
+                        "new_product_name"
+                    ).value;
+
+
+                document.getElementById(
+                    "product_service_code"
+                ).value =
+                    document.getElementById(
+                        "new_product_code"
+                    ).value;
+
+            }
+
+        }
+
+
+        // ====================================================
+        // FORM VALIDATION
+        // ====================================================
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                copyNewValues();
+
+
+                const schemeName =
+                    document.getElementById(
+                        "scheme_name"
+                    ).value;
+
+
+                const schemeCode =
+                    document.getElementById(
+                        "scheme_code"
+                    ).value;
+
+
+                if (
+                    !schemeName
+                    ||
+                    !schemeCode
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Skema wajib dipilih atau ditambahkan."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    categoryStatus.value
+                    ===
+                    "VALUE"
+                ) {
+
+                    const name =
+                        document.getElementById(
+                            "category_name"
+                        ).value;
+
+
+                    const code =
+                        document.getElementById(
+                            "category_code"
+                        ).value;
+
+
+                    if (
+                        !name
+                        ||
+                        !code
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Kategori wajib dipilih atau ditambahkan."
+                        );
+
+                        return;
+
+                    }
+
+                }
+
+
+                if (
+                    subcategoryStatus.value
+                    ===
+                    "VALUE"
+                ) {
+
+                    const name =
+                        document.getElementById(
+                            "subcategory_name"
+                        ).value;
+
+
+                    const code =
+                        document.getElementById(
+                            "subcategory_code"
+                        ).value;
+
+
+                    if (
+                        !name
+                        ||
+                        !code
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Sub Kategori wajib dipilih atau ditambahkan."
+                        );
+
+                        return;
+
+                    }
+
+                }
+
+
+                if (
+                    productStatus.value
+                    ===
+                    "VALUE"
+                ) {
+
+                    const name =
+                        document.getElementById(
+                            "product_service_name"
+                        ).value;
+
+
+                    const code =
+                        document.getElementById(
+                            "product_service_code"
+                        ).value;
+
+
+                    if (
+                        !name
+                        ||
+                        !code
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Jenis wajib dipilih atau ditambahkan."
+                        );
+
+                        return;
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        // ====================================================
+        // EVENT LISTENERS
+        // ====================================================
+
+        schemeSelect.addEventListener(
+            "change",
+            handleSchemeChange
+        );
+
+
+        categoryStatus.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    categoryStatus.value
+                    !==
+                    "VALUE"
+                ) {
+
+                    categorySelect.value =
+                        "";
+
+                }
+
+
+                handleCategoryChange();
+
+            }
+        );
+
+
+        categorySelect.addEventListener(
+            "change",
+            handleCategoryChange
+        );
+
+
+        subcategoryStatus.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    subcategoryStatus.value
+                    !==
+                    "VALUE"
+                ) {
+
+                    subcategorySelect.value =
+                        "";
+
+                }
+
+
+                handleSubcategoryChange();
+
+            }
+        );
+
+
+        subcategorySelect.addEventListener(
+            "change",
+            handleSubcategoryChange
+        );
+
+
+        productStatus.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    productStatus.value
+                    !==
+                    "VALUE"
+                ) {
+
+                    productSelect.value =
+                        "";
+
+                }
+
+
+                handleProductChange();
+
+            }
+        );
+
+
+        productSelect.addEventListener(
+            "change",
+            handleProductChange
+        );
+
+
+        // ====================================================
+        // REVIEW PREFILL
+        // ====================================================
+
+        function applyReviewPrefill() {
+
+            if (
+                !reviewPrefill
+                ||
+                !reviewPrefill.active
+            ) {
+                loadCategories();
+                return;
+            }
+
+
+            // -----------------------------------------------
+            // SKEMA
+            // -----------------------------------------------
+
+            if (
+                reviewPrefill.scheme_id
+            ) {
+                schemeSelect.value =
+                    String(
+                        reviewPrefill.scheme_id
+                    );
+
+                handleSchemeChange();
+            }
+            else {
+
+                schemeSelect.value =
+                    "__NEW__";
+
+                handleSchemeChange();
+
+                document.getElementById(
+                    "new_scheme_name"
+                ).value =
+                    reviewPrefill.scheme_name || "";
+
+                document.getElementById(
+                    "new_scheme_code"
+                ).value =
+                    reviewPrefill.scheme_code || "";
+            }
+
+
+            // -----------------------------------------------
+            // KATEGORI
+            // -----------------------------------------------
+
+            categoryStatus.value =
+                reviewPrefill.category_status
+                ||
+                "MISSING";
+
+            handleCategoryChange();
+
+            if (
+                reviewPrefill.category_status
+                ===
+                "VALUE"
+            ) {
+
+                if (
+                    reviewPrefill.category_id
+                ) {
+                    categorySelect.value =
+                        String(
+                            reviewPrefill.category_id
+                        );
+
+                    handleCategoryChange();
+                }
+                else {
+
+                    categorySelect.value =
+                        "__NEW__";
+
+                    handleCategoryChange();
+
+                    document.getElementById(
+                        "new_category_name"
+                    ).value =
+                        reviewPrefill.category_name || "";
+
+                    document.getElementById(
+                        "new_category_code"
+                    ).value =
+                        reviewPrefill.category_code || "";
+                }
+            }
+
+
+            // -----------------------------------------------
+            // SUB KATEGORI
+            // -----------------------------------------------
+
+            subcategoryStatus.value =
+                reviewPrefill.subcategory_status
+                ||
+                "MISSING";
+
+            handleSubcategoryChange();
+
+            if (
+                reviewPrefill.subcategory_status
+                ===
+                "VALUE"
+            ) {
+
+                if (
+                    reviewPrefill.subcategory_id
+                ) {
+                    subcategorySelect.value =
+                        String(
+                            reviewPrefill.subcategory_id
+                        );
+
+                    handleSubcategoryChange();
+                }
+                else {
+
+                    subcategorySelect.value =
+                        "__NEW__";
+
+                    handleSubcategoryChange();
+
+                    document.getElementById(
+                        "new_subcategory_name"
+                    ).value =
+                        reviewPrefill.subcategory_name || "";
+
+                    document.getElementById(
+                        "new_subcategory_code"
+                    ).value =
+                        reviewPrefill.subcategory_code || "";
+                }
+            }
+
+
+            // -----------------------------------------------
+            // JENIS PRODUK / PROSES / JASA
+            // -----------------------------------------------
+
+            productStatus.value =
+                reviewPrefill.product_service_status
+                ||
+                "VALUE";
+
+            handleProductChange();
+
+            if (
+                reviewPrefill.product_service_status
+                ===
+                "VALUE"
+            ) {
+
+                if (
+                    reviewPrefill.product_service_id
+                ) {
+                    productSelect.value =
+                        String(
+                            reviewPrefill.product_service_id
+                        );
+
+                    handleProductChange();
+                }
+                else {
+
+                    productSelect.value =
+                        "__NEW__";
+
+                    handleProductChange();
+
+                    document.getElementById(
+                        "new_product_name"
+                    ).value =
+                        reviewPrefill.product_service_name || "";
+
+                    document.getElementById(
+                        "new_product_code"
+                    ).value =
+                        reviewPrefill.product_service_code || "";
+                }
+            }
+        }
+
+
+        // ====================================================
+        // INITIAL STATE
+        // ====================================================
+
+        categorySelect.disabled =
+            false;
+
+
+        subcategorySelect.disabled =
+            false;
+
+
+        productSelect.disabled =
+            false;
+
+
+        applyReviewPrefill();
+
+    }
+);
+
+</script>
+
+
+{% endblock %}
